@@ -20,7 +20,7 @@ Private discord economy bot for xarshmk
 - Fix /redeem command
 - Fix Ticket system (Ticket buttons dont work)
 - Implement back the /role-income-list command
-
+- Implement /use (this command allows to use a shop item which would activate the role given or role required feature of that specific item)
 
 ## Run Locally
 
