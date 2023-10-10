@@ -2,10 +2,14 @@ const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 
 const Ticket = sequelize.define('ticket', {
+    id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        primaryKey: true,
+        autoIncrement: true
+    },
     guild_id: {
         type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
     },
     user_id: {
         type: Sequelize.STRING,
