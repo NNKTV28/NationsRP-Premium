@@ -44,7 +44,7 @@ try {
 
 try {
   require("./deploy-commands.js")
-  client.login(token.toString());
+  client.login(token);
 
 } catch (err) {
   console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[INDEX ERROR]`)} ` + `${err}`.bgRed);
