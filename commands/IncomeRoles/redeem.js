@@ -1,6 +1,8 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const BalanceIncomeRoleModel = require("../../models/balanceIncomeRole");
 const UserIncomeRedeemTimeModel = require("../../models/userIncomeRedeemTime");
+const color = require("colors");
+const moment = require("moment");
 
 module.exports = {
   data: new SlashCommandBuilder().setName("redeem").setDescription("Redeem items and balance"),
@@ -10,10 +12,11 @@ module.exports = {
 
     try {
       const incomeRoles = await BalanceIncomeRoleModel.findAll();
-      console.log(`There are income roless: ${incomeRoles.toString()}`);
+      console.log(`There are income roles: ${BalanceIncomeRoleModel.role_id}`);
       for (const role of roles) {
         const incomeRole = incomeRoles.find((role_id) => role_id == role.id); // Use arrow function syntax here
-
+        console.log(`Income role: ${incomeRole}`);
+        console.log(`Income role id: ${incomeRole.role_id}`)
         if (incomeRole) {
           const redeemedTime = await UserIncomeRedeemTimeModel.findOne({ where: { user_id: interaction.user.id } });
           if (!redeemedTime && interaction.user.role.id === BalanceIncomeRoleModel.role_id)
@@ -21,7 +24,6 @@ module.exports = {
             console.log("Creating redeem time for user");
             await UserIncomeRedeemTimeModel.create({ user_id: interaction.user.id, balance_redeemed_time: "00:00:00" });
           }
-            
 
           if (redeemedTime && redeemedTime.balance_redeemed_time && redeemedTime.item_redeemed_time) {
             // Check if enough time has passed since last redemption
@@ -29,18 +31,11 @@ module.exports = {
             const lastRedeemedTime = Math.max(redeemedTime.balance_redeemed_time.getTime(), redeemedTime.item_redeemed_time.getTime());
             const timeDifference = currentTime - lastRedeemedTime;
             const cooldown = parseInt(incomeRole.timer_to_recieve) * 1000; // Convert seconds to milliseconds
-
-            /*
-            const seconds = Math.round(Date.now() / 1000);
-            await interaction.reply(`DankRPG has been up since <t:${Math.round(seconds - process.uptime())}:R>`);
-            */
             if (timeDifference < cooldown) {
               await interaction.reply({ content: `You can redeem again in ${Math.ceil((cooldown - timeDifference) / 1000)} seconds.`, ephemeral: true });
               return;
             }
           }
-
-          // Redeem items and balance here
         }
       }
       await interaction.reply({ content: "No roles found to redeem.", ephemeral: true });

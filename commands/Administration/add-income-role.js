@@ -4,7 +4,7 @@ const BalanceModel = require('../../models/balance');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('role-income-add')
+    .setName('add-income-role')
     .setDescription('Create an income role.')
     .addRoleOption(option =>
       option.setName('role_id')
