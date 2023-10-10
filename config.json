@@ -1,0 +1,12 @@
+{
+    "token": "MTE1OTc1ODM5Mjc0MzY5NDQyNw.GKsoBc.pIK02YOdT1dnHFH_881XnWf9GWCUcwG0inuKmg",
+    "databaseLogWebhookURL": "https://discord.com/api/webhooks/1160891198504976396/NPJFNLx_Qch7MpOMsNy81KFGT-FCvi_PEf-V85y88Usg_KfsZaP-4sJR3A31_YPQEDUN",
+    "errorWebhookURL": "https://discord.com/api/webhooks/1156494105052975114/tBGlLuW69IZCIqH5DNVRT9iqLiOOP8wWYUWAmCUSAWxdJ_bGeLNcjmiH3ZomELojdi5S",
+    "issueWebhookURL": "https://discord.com/api/webhooks/1158407214072070224/fF3Nj0WjFbdU-NJQwmcBD7S1u6Kh_Mwje2VIQL3bceboWvC_hH0k1uLrRWxQvGS_7qwb",
+    "clientId": "1159758392743694427",
+    "publicKEY": "14a1a411c5a1bc4d6a21d315a9f89018fa69557f587b910cee2496c1755d9c5f",
+    "ownerIDS": [
+        "570539075753345024"
+    ],
+    "embedColor": ""
+}

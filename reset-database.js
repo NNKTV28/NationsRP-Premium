@@ -1,0 +1,19 @@
+const Guild = require('./models/guild');
+const Store = require('./models/store');
+const ItemIncomeRole = require('./models/itemIncomeRole');
+const BalanceIncomeRole = require('./models/balanceIncomeRole');
+const Balance = require('./models/balance');
+const Inventory = require('./models/inventory');
+const Ticket = require('./models/ticket');
+const AdminRoles = require('./models/adminroles');
+const UserIncomeRedeemTime = require('./models/userIncomeRedeemTime');
+
+UserIncomeRedeemTime.sync({force: true});
+Guild.sync({force: true});
+Store.sync({force: true});
+ItemIncomeRole.sync({force: true});
+BalanceIncomeRole.sync({force: true});
+Balance.sync({force: true});
+Inventory.sync({force: true});
+Ticket.sync({force: true});
+AdminRoles.sync({force: true});
