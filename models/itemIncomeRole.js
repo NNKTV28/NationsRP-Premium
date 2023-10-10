@@ -2,6 +2,9 @@ const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 
 const itemIncomeRole = sequelize.define('itemincomerole', {
+    guild_id: {
+        type: Sequelize.STRING,
+    },
     role_id: {
         type: Sequelize.STRING,
         primaryKey: true

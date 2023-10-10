@@ -49,6 +49,7 @@ module.exports = {
 
       // Create an income role entry in the database
       await BalanceIncomeRole.create({
+        guild_id: interaction.guild.id,
         role_id: roleID,
         ammount_to_recieve: amountToReceive,
         timer_to_recieve: timerToReceive,
