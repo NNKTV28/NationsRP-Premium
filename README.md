@@ -11,6 +11,9 @@ Private discord economy bot for xarshmk
 2. [How to run the bot locally](#Run-locally)
 3. [How to deploy the bot in a server](#Deployment)
 4. [Environment Variables](#Environment-Variables)
+5. [Bot Features](#Features)
+6. [Support](#Support)
+7. [Author](#Author)
 ## Roadmap
 
 - Fix balance and item income roles
