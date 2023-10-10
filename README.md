@@ -4,6 +4,68 @@
 Private discord economy bot for xarshmk
 
 
+
+## Table of Contents
+
+1. [Roadmap](#Roadmap)
+2. [How to run the bot locally](#Run-locally)
+3. [How to deploy the bot in a server](#Deployment)
+4. [Environment Variables](#Environment-Variables)
+## Roadmap
+
+- Fix balance and item income roles
+- Fix /redeem command
+- Fix Ticket system (Ticket buttons dont work)
+- Implement back the /role-income-list command
+
+
+## Run Locally
+
+Clone the project
+
+```bash
+  git clone https://github.com/NNKTV28/NationsRP-Premium.git
+```
+
+Go to the project directory
+
+```bash
+  cd NationsRP-Premium
+```
+
+Install dependencies
+
+```bash
+  npm install || npm i
+```
+
+Deploy commands
+
+```bash
+  node .\deploy-commands.js
+```
+
+Start the server
+
+```bash
+  node index.js
+```
+
+# Optional Steps
+
+## Synchronize Database:
+Once executed
+```bash
+  node index.js
+```
+
+Stop the bot and run:
+
+```bash
+  node .\utils\syncDB.js
+```
+
+
 ## Deployment
 
 To deploy this project run
