@@ -13,7 +13,7 @@ module.exports = {
     async execute(interaction) {
       await interaction.deferReply({ ephemeral: true });
       try {
-        require("../../syncDB.js");
+        require("../../utils/syncDB.js");
         await interaction.editReply({ content: "DB synched!" });
         console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.green(`[DB SYNCH]`)} ` + `${color.bold.green(`[SUCCESS]`)} ` + `DB Synched!`);
         return;        
