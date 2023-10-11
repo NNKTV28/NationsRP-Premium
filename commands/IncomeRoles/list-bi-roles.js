@@ -22,7 +22,9 @@ module.exports = {
 
         for (const role of balanceRoles) 
         {
-            reply += `**${role.role_id}** - ${role.ammount_to_recieve}$ - ${role.timer_to_recieve}h\n`;
+          const timerToReceive = role.timer_to_recieve;
+          const timerToReceiveSeconds = timerToReceive.split(':').reduce((acc, curr) => acc * 60 + +curr);
+          reply += `**${role.role_id}** - ${role.ammount_to_recieve}$ - ${timerToReceiveSeconds}h\n`;
         }
         return interaction.editReply(reply);
       }
