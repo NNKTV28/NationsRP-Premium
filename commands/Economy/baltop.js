@@ -21,10 +21,12 @@ module.exports = {
 			filtered.map(choice => ({ name: choice, value: choice })),
 		);
 	},
-
   async execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
-    
+    const user = interaction.user;
+    const member = interaction.guild.members.cache.get(user.id);
+    const guild = interaction.guild;
+    const users = await guild.members.fetch();
     try {
         let fields = [];
         let topCashBalances = await BalanceModel.findAll({
@@ -35,37 +37,51 @@ module.exports = {
             order: [[`user_balance_bank`, 'DESC']],
             limit: 10 // Display top 10 balances, you can change this number as per your requirement
         });
-
         const baltopEmbed = new EmbedBuilder()
-            .setTitle("Baltop")
+            .setTitle("Nations RP | Diplomatic Leaderboard")
             .addFields(fields);
 
-        if (interaction.options.getString('currency') === 'cash') {
-            topCashBalances.forEach((balance, index) => {
-                const user = interaction.guild.members.cache.get(balance.user_id);
-                fields.push({
-                  name: `${index + 1}. ${user.displayName}`,
-                  value: `${balance[`user_balance_cash`].toLocaleString()} ${globals.cashEmoji}`,
-                  inline: false
-                });
-            });
-        }else if (interaction.options.getString('currency') === 'bank') {
-                topBankBalances.forEach((balance, index) => {
-                    const user = interaction.guild.members.cache.get(balance.user_id);
-                    fields.push({
-                      name: `${index + 1}. ${user.displayName}`,
-                      value: `${balance[`user_balance_bank`].toLocaleString()} ${globals.BankEmoji}`,
-                      inline: false
-                    });
-                });
+        if (interaction.options.getString('currency') === 'cash') 
+        {
+          topCashBalances.forEach((balance, index) => {
+            //const users = interaction.guild.members.fetch(balance.user_id);
+            Promise.all(users.map(async (user) => {
+              if(interaction.guild.id == balance.guild_id)
+              {
+                fields.push
+                (
+                  {
+                    name: `${index + 1}. ${users.displayName}`,
+                    value: `${balance[`user_balance_cash`].toLocaleString()} ${globals.cashEmoji}`,
+                    inline: false
+                  }
+                );
+              }else{
+                return baltopEmbed.setDescription("No one with cash found");
+              }
+            }));
+          });
+        }else if (interaction.options.getString('currency') === 'bank') 
+        {
+          topBankBalances.forEach((balance, index) => {
+          const user = interaction.guild.members.fetch(balance.user_id);
+          if(interaction.guild.id == balance.guild_id)
+          {
+            fields.push
+            (
+              {
+                name: `${index + 1}. ${user.displayName}`,
+                value: `${balance[`user_balance_bank`].toLocaleString()} ${globals.BankEmoji}`,
+                inline: false
+              }
+            );
+          }else{
+            return baltopEmbed.setDescription("No one with bank found");
+          }
+         });
         }
-        else {
-            baltopEmbed.setDescription("not found")
-        }
-
         interaction.editReply({ embeds: [baltopEmbed] });
     } catch (err) {
-        // Handle the error appropriately, e.g., send an error message to the user.
         await interaction.editReply('An error occurred while fetching the balance.');
         return console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[BALTOP ERROR]`)} ` + `${err}`.bgRed);
     }

@@ -14,7 +14,7 @@ module.exports = {
     
 
     // Check if the member has the "ADMINISTRATOR" permission or is the owner of the bot.
-    if (member.permissions.has("ADMINISTRATOR") || user.id == ownerID.ownerIDS) {
+    if (user.id == ownerID.ownerIDS) {
       try {
         const guild = interaction.guild;
         const users = await guild.members.fetch();
@@ -37,7 +37,6 @@ module.exports = {
             }
           }
         }));
-
         await interaction.reply("Done!");
         console.log("Done!");
       } catch (err) {

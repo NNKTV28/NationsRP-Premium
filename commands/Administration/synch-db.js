@@ -6,7 +6,7 @@ const moment = require("moment");
 module.exports = {
     data: new SlashCommandBuilder()
       .setName("synch-db") // must be lower case
-      .setDescription("Reloads all commands without restarting the bot")
+      .setDescription("Reloads the Database")
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator) // Allows the command to be used only by people with an Admin role
       .setDMPermission(false), // Allows the command to be used in DMs
     
