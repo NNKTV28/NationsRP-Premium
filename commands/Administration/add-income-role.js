@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const BalanceIncomeRole = require('../../models/balanceIncomeRole');
-const BalanceModel = require('../../models/balance');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -45,14 +44,22 @@ module.exports = {
         await interaction.editReply('Income role already exists for this role ID.');
         return console.log('Income role already exists for this role ID.');
       }
-      const balance = await BalanceModel.findOne({ where: { user_id: interaction.user.id } });
+      // pass timerToRecieve to secconds
+      const timerToReceiveSeconds = timerToReceive.split(':').reduce((acc, curr) => acc * 60 + +curr);
+      console.log(timerToReceiveSeconds);
+
+      if (timerToReceiveSeconds < 60) {
+        await interaction.editReply('Timer to receive must be at least 1 minute.');
+        return console.log('Timer to receive must be at least 1 minute.');
+      }
+
 
       // Create an income role entry in the database
       await BalanceIncomeRole.create({
         guild_id: interaction.guild.id,
         role_id: roleID,
         ammount_to_recieve: amountToReceive,
-        timer_to_recieve: timerToReceive,
+        timer_to_recieve: timerToReceiveSeconds,
       });
       interaction.editReply(`Income role created for role ID: ${roleID}`);
     } catch (error) {

@@ -10,11 +10,11 @@ const balanceIncomeRole = sequelize.define('balanceincomerole', {
         primaryKey: true
     },
     ammount_to_recieve: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: false
     },
     timer_to_recieve: {
-        type: Sequelize.TIME,
+        type: Sequelize.STRING,
         allowNull: false
     },
 });

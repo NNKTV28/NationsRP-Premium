@@ -7,11 +7,11 @@ const userIncomeRedeemTime = sequelize.define('userincomeredeemtime', {
         primaryKey: true
     },
     balance_redeemed_time: {
-        type: Sequelize.TIME,
+        type: Sequelize.STRING,
         allowNull: true
     },
     item_redeemed_time: {
-        type: Sequelize.TIME,
+        type: Sequelize.STRING,
         allowNull: true
     },
 });
