@@ -3,6 +3,8 @@ const { errorWebhookURL } = require('../config.json');
 const webhook = new WebhookClient({ url: errorWebhookURL });
 const color = require("colors");
 const moment = require("moment");
+const TicketModel = require("../models/ticket");
+const ticketEvent = require("./ticketEvent.js");
 
 module.exports = {
   name: Events.InteractionCreate,
