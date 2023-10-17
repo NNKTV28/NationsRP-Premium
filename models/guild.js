@@ -7,22 +7,7 @@ const Guild = sequelize.define('guild', {
         allowNull: false,
         primaryKey: true,
     },
-    welcomeChannelID: {
-        type: Sequelize.STRING,
-        allowNull: true,
-    },
-    welcomeMessage:  {
-        type: Sequelize.STRING,
-        allowNull: true
-    },
-    welcomeRoleID: {
-        type: Sequelize.STRING,
-        allowNull: true
-    },
-    Status: {
-        type: Sequelize.BOOLEAN,
-    },
-    EmbedColor: {
+    embed_color: {
         type: Sequelize.STRING,
         allowNull: true
     }

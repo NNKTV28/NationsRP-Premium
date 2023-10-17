@@ -4,6 +4,7 @@ const UserIncomeRedeemTimeModel = require("../../models/userIncomeRedeemTime");
 const UserBalanceModel = require("../../models/balance");
 const color = require("colors");
 const moment = require("moment");
+const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -11,6 +12,11 @@ module.exports = {
     .setDescription("Redeem items and balance"),
 
   async execute(interaction) {
+    let userRecord = await UserSettingsModel.findOne({
+      where: { user_id: interaction.user.id },
+    });
+    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
+
     const guildMember = await interaction.guild.members.fetch(interaction.user.id);
     const roles = guildMember.roles.cache.keys();
     console.log(`Todays Date: ${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}`);
@@ -58,7 +64,7 @@ module.exports = {
           // parse remainingSecconds to HH:MM:SS format
           const remainingTime = moment.utc(remainingSeconds * 1000).format("HH:mm:ss");
 
-          await interaction.reply({ content: `You can redeem again in ${remainingTime} Hours.`, ephemeral: true });
+          await interaction.editReply({ content: `You can redeem again in ${remainingTime} Hours.`});
           return;
         } else {
           // Update the balance_redeemed_time in the database to the current time
@@ -75,11 +81,11 @@ module.exports = {
       }
 
       await balance.save();
-      await interaction.reply({ content: "Balance redeemed successfully.", ephemeral: true });
+      await interaction.editReply({ content: "Balance redeemed successfully."});
 
     } catch (err) {
       console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[REDEEM ERROR]`)} ` + `${err}`.bgRed);
-      await interaction.reply({ content: "An error occurred while redeeming.", ephemeral: true });
+      await interaction.editReply({ content: "An error occurred while redeeming."});
     }
   },
 };

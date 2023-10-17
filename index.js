@@ -43,7 +43,7 @@ try {
 }
 
 try {
-  require("./deploy-commands.js")
+  //require("./deploy-commands.js")
   client.login(token);
 
 } catch (err) {

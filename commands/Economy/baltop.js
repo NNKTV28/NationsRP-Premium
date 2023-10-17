@@ -3,6 +3,7 @@ const BalanceModel = require('../../models/balance');
 const globals = require("../../utils/globals.js");
 const color = require("colors");
 const moment = require("moment");
+const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -22,7 +23,10 @@ module.exports = {
 		);
 	},
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    let userRecord = await UserSettingsModel.findOne({
+      where: { user_id: interaction.user.id },
+    });
+    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
     const user = interaction.user;
     const member = interaction.guild.members.cache.get(user.id);
     const guild = interaction.guild;

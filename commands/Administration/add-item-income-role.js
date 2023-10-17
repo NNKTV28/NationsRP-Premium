@@ -2,6 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const itemIncomeRole = require('../../models/itemIncomeRole');
 const InventoryModel = require('../../models/inventory');
 const StoreModel = require('../../models/store');
+const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -30,7 +31,11 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    let userRecord = await UserSettingsModel.findOne({
+      where: { user_id: interaction.user.id },
+    });
+
+    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
 
     const roleID = interaction.options.getString('role_id');
     const itemName = interaction.options.getString('item_name');

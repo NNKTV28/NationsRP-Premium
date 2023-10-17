@@ -2,6 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const globals = require("../../utils/globals.js");
 const color = require("colors");
 const moment = require("moment");
+const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,7 +12,10 @@ module.exports = {
       .setDMPermission(false), // Allows the command to be used in DMs
     
     async execute(interaction) {
-      await interaction.deferReply({ ephemeral: true });
+      let userRecord = await UserSettingsModel.findOne({
+      where: { user_id: interaction.user.id },
+    });
+    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
       try {
         require("../../utils/syncDB.js");
         await interaction.editReply({ content: "DB synched!" });

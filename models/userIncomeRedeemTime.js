@@ -2,9 +2,13 @@ const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 
 const userIncomeRedeemTime = sequelize.define('userincomeredeemtime', {
+    id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
     user_id:{
         type: Sequelize.STRING,
-        primaryKey: true
     },
     balance_redeemed_time: {
         type: Sequelize.STRING,

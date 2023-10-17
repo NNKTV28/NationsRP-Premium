@@ -13,7 +13,7 @@ const balanceIncomeRole = sequelize.define('balanceincomerole', {
         type: Sequelize.INTEGER,
         allowNull: false
     },
-    timer_to_recieve: {
+    cooldown_timer: {
         type: Sequelize.STRING,
         allowNull: false
     },

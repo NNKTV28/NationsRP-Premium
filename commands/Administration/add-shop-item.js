@@ -3,6 +3,7 @@ const Store = require('../../models/store');
 const globals = require('../../utils/globals');
 const color = require("colors")
 const moment = require("moment");
+const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -33,7 +34,10 @@ module.exports = {
 
     async execute(interaction) 
     {
-        await interaction.deferReply({ ephemeral: true });
+        let userRecord = await UserSettingsModel.findOne({
+            where: { user_id: interaction.user.id },
+        });
+        await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
         
         const itemName = interaction.options.getString('item');
         const itemPrice = interaction.options.getInteger('price');

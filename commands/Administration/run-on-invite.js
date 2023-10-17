@@ -1,6 +1,9 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
-const { ownerID } = require("../../config.json");
+const { SlashCommandBuilder, PermissionFlagsBits, PermissionsBitField, Role } = require("discord.js");
+const config = require("../../config.json");
 const Balance = require("../../models/balance");
+const AdminRolesModel = require("../../models/adminroles");
+const GuildModel = require("../../models/guild");
+const UserSettingsModel = require("../../models/usersettings");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -8,21 +11,60 @@ module.exports = {
     .setDescription("Run this command only once after inviting the bot, this command inputs all users into the database")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(interaction) {
+    // fetch the interaction user
     const user = interaction.user;
-    const member = interaction.guild.members.cache.get(user.id);
+    // fetch the guild id
     const guildID = interaction.guild.id;
-    
+    // fetch all members in a guild
+    const members = await interaction.guild.members.fetch();
+    // fetch all roles in a guild
+    const roles = await interaction.guild.roles.fetch();
+    // Filter the roles that have the "ADMINISTRATOR" permission.
+    //const AdminRoles = interaction.guild.roles.cache.filter(roles.permissions.has(PermissionsBitField.Flags.Administrator))
 
     // Check if the member has the "ADMINISTRATOR" permission or is the owner of the bot.
-    if (user.id == ownerID.ownerIDS) {
+    if (user.id == config.ownerIDS) {
       try {
-        const guild = interaction.guild;
-        const users = await guild.members.fetch();
+        // Find or create the guild record in the database
+        let guildRecord = await GuildModel.findOne({
+          where: { guild_id: guildID },
+        });
+        if (!guildRecord) {
+          console.log(`Guild ${guildID} is not in the database, adding it now`);
+          guildRecord = await GuildModel.create({
+            guild_id: guildID,
+            embed_color: config.defaultEmbedColor,
+            ephemeral: false,
+          });
+        }
+
         // Use Promise.all to wait for all database operations to complete
-        await Promise.all(users.map(async (user) => {
+        await Promise.all(members.map(async (user) => {
           const balance = await Balance.findOne({
             where: { user_id: user.id },
           });
+
+          let userRecord = await UserSettingsModel.findOne({
+            where: { user_id: user.id },
+          });
+          if (!userRecord) {
+            console.log(`User ${user.id} is not in the database, adding it now`);
+            if (user.user.bot) {
+              userRecord = await UserSettingsModel.create({
+                guild_id: guildID,
+                user_id: user.id,
+                is_bot: true,
+                ephemeral_message: false
+              });
+            }else{
+              userRecord = await UserSettingsModel.create({
+                guild_id: guildID,
+                user_id: user.id,
+                is_bot: false,
+                ephemeral_message: false
+              });
+            } 
+          }
           // check if the User is a bot
           if (user.user.bot) {
             return;

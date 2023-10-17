@@ -1,5 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require("discord.js"); 
 const globals = require("../../utils/globals.js");
+const UserSettingsModel = require("../../models/usersettings.js");
+
 module.exports = {
   category: "Info",
   cooldown: 15,
@@ -21,6 +23,10 @@ module.exports = {
    */
 
   async execute(client, interaction) {
+    let userRecord = await UserSettingsModel.findOne({
+      where: { user_id: interaction.user.id },
+    });
+    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
 
     try {
       const ws = "https://panel.riotnodes.co.uk/server/d904932f";

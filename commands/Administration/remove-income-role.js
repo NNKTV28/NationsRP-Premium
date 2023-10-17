@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const BalanceIncomeRole = require('../../models/balanceIncomeRole');
+const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -13,7 +14,10 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    let userRecord = await UserSettingsModel.findOne({
+      where: { user_id: interaction.user.id },
+    });
+    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
 
     const roleID = interaction.options.getRole('role_id').id;
 

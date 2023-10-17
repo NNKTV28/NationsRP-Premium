@@ -6,27 +6,22 @@ const config = require("../../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("settings")
-    .setDescription("Change your own settings.")
+    .setName("admin-settings")
+    .setDescription("Change Bots settings.")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("embedcolor")
-        .setDescription("Changes the color of embeds.")
-        .addStringOption((option) =>
-          option.setName("color")
-          .setDescription("HEX color code. Add a # before the code. See HEX colors here: https://www.color-hex.com")
-          .setRequired(true)
+        .setName("ticket-system")
+        .setDescription("Setup the ticketing system.")
+        .addChannelOption(option => option
+            .setName("channel")
+            .setDescription("provide channel to setup ticket")
+            .setRequired(true)
         )
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("interactions")
-        .setDescription("Changes whether other people can see your bot replies.")
-        .addBooleanOption((option) =>
-          option.setName("ephemeral")
-          .setDescription("Whether other people can see your bot replies. False by default")
-          .setRequired(true)
-        )
+        .addChannelOption(option => option
+            .setName("category")
+            .setDescription("provide category where created ticket will be displayed")
+            .setRequired(true)
+        ),
     ),
   async execute(interaction) {
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });

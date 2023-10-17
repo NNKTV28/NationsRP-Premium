@@ -2,6 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder } = 
 const BlackMarketModel = require('../../models/blackMarket');
 const Balance = require('../../models/balance');
 const globals = require('../../utils/globals');
+const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -10,7 +11,10 @@ module.exports = {
     .setDMPermission(false),
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    let userRecord = await UserSettingsModel.findOne({
+      where: { user_id: interaction.user.id },
+    });
+    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
 
     const user = interaction.user; // Get the user from the interaction
 

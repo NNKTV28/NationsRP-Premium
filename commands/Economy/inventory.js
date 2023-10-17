@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const Inventory = require('../../models/inventory'); // Import your Inventory model
+const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -8,7 +9,10 @@ module.exports = {
     .setDMPermission(false),
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    let userRecord = await UserSettingsModel.findOne({
+      where: { user_id: interaction.user.id },
+    });
+    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
 
     try {
       const userId = interaction.user.id;

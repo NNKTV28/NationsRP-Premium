@@ -3,7 +3,8 @@ const Store = require('../../models/store');
 const Balance = require('../../models/balance');
 const globals = require("../../utils/globals.js");
 const config = require("../../config.json");
-const Guild = require('../../models/guild');
+const GuildModel = require('../../models/guild');
+const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -12,20 +13,20 @@ module.exports = {
     .setDMPermission(false),
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    let userRecord = await UserSettingsModel.findOne({
+      where: { user_id: interaction.user.id },
+    });
+
+    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
 
     const user = interaction.user; // Get the user from the interaction
-    let embedColor = Guild.EmbedColor
+    const embedColor = GuildModel.embed_color;
 
     try {
 
       const items = await Store.findAll({
         attributes: ['itemName', 'itemPrice', 'itemDescription', 'itemQuantity'],
       });
-
-      if(!Guild.EmbedColor){
-        embedColor = "Aqua"
-      }
 
       if (!items || items.length === 0) {
         const noItemsEmbed = new EmbedBuilder()

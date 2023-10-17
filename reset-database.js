@@ -7,6 +7,7 @@ const Inventory = require('./models/inventory');
 const Ticket = require('./models/ticket');
 const AdminRoles = require('./models/adminroles');
 const UserIncomeRedeemTime = require('./models/userIncomeRedeemTime');
+const UserSettings = require('./models/usersettings');
 
 UserIncomeRedeemTime.sync({force: true});
 Guild.sync({force: true});
@@ -17,3 +18,4 @@ Balance.sync({force: true});
 Inventory.sync({force: true});
 Ticket.sync({force: true});
 AdminRoles.sync({force: true});
+UserSettings.sync({force: true});

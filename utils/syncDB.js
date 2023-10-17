@@ -7,6 +7,7 @@ const Inventory = require('../models/inventory');
 const Ticket = require('../models/ticket');
 const AdminRoles = require('../models/adminroles');
 const BlackMarket = require('../models/blackMarket');
+const UserSettings = require('../models/usersettings');
 
 Guild.sync({alter: true});
 Store.sync({alter: true});
@@ -17,3 +18,4 @@ Inventory.sync({alter: true});
 Ticket.sync({alter: true});
 AdminRoles.sync({alter: true});
 BlackMarket.sync({alter: true});
+UserSettings.sync({alter: true});

@@ -1,12 +1,17 @@
 const { SlashCommandBuilder } = require("discord.js");
 const os = require("os");
+const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("info")
     .setDescription("Display bot information"),
 
-  execute(interaction) {
+  async execute(interaction) {
+    let userRecord = await UserSettingsModel.findOne({
+      where: { user_id: interaction.user.id },
+    });
+    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
     // Bot Information
     const botName = interaction.client.user.username;
     const serverName = interaction.guild.name;
@@ -44,6 +49,6 @@ module.exports = {
     };
 
     // Send the embed
-    interaction.reply({ embeds: [embed] });
+    interaction.editReply({ embeds: [embed] });
   },
 };
