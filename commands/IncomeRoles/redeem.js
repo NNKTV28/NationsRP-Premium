@@ -48,8 +48,6 @@ module.exports = {
         if (!lastRedeemedTime) {
           lastRedeemedTime = currentTime;
         }
-
-        //const cooldown = parseInt(balanceIncomeRoles[0].timer_to_recieve) * 1000; // Assuming there's only one role in incomeRoles
         const cooldown = balanceIncomeRoles.reduce((acc, curr) => acc + parseInt(curr.timer_to_recieve) * 1000, 0);
 
         const timeElapsed = currentTime - lastRedeemedTime;

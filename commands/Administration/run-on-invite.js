@@ -54,14 +54,16 @@ module.exports = {
                 guild_id: guildID,
                 user_id: user.id,
                 is_bot: true,
-                ephemeral_message: false
+                ephemeral_message: false,
+                embed_color: config.defaultEmbedColor
               });
             }else{
               userRecord = await UserSettingsModel.create({
                 guild_id: guildID,
                 user_id: user.id,
                 is_bot: false,
-                ephemeral_message: false
+                ephemeral_message: false,
+                embed_color: config.defaultEmbedColor
               });
             } 
           }

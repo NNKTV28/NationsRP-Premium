@@ -6,10 +6,6 @@ const Guild = sequelize.define('guild', {
         type: Sequelize.STRING,
         primaryKey: true,
     },
-    embed_color: {
-        type: Sequelize.STRING,
-        allowNull: true
-    },
     ticket_parent_category: {
         type: Sequelize.STRING,
         allowNull: true

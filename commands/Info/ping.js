@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require("discord.js"); 
 const globals = require("../../utils/globals.js");
 const UserSettingsModel = require("../../models/usersettings.js");
+const embedColors = require("../../utils/colors.js");
 
 module.exports = {
   category: "Info",
@@ -45,7 +46,7 @@ module.exports = {
         ephemeral: true,
         embeds: [
           new EmbedBuilder()
-            .setColor(totalLatency < 200 ? Embed.Colors.successcolor : totalLatency < 500 ? Embed.Colors.stanbycolor : Embed.Colors.wrongcolor)
+            .setColor(totalLatency < 200 ? embedColors.GENERAL_COLORS.GREEN : totalLatency < 500 ? embedColors.GENERAL_COLORS.YELLOW : embedColors.GENERAL_COLORS.RED)
             .setTitle(`Returns Latency And API Ping`)
             .addFields(
             {

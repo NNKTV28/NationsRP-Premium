@@ -18,12 +18,8 @@ module.exports = {
     });
 
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
-
-    const user = interaction.user; // Get the user from the interaction
-    const embedColor = GuildModel.embed_color;
-
+    const user = interaction.user;
     try {
-
       const items = await Store.findAll({
         attributes: ['itemName', 'itemPrice', 'itemDescription', 'itemQuantity'],
       });
@@ -36,7 +32,7 @@ module.exports = {
       } else {
         const itemsListEmbed = new EmbedBuilder()
           .setTitle('  - Shop -  ')
-          .setColor(`${embedColor}`)
+          .setColor(`${userRecord.embed_color}`)
 
         for (const item of items) {
           const userBalance = await Balance.findOne({

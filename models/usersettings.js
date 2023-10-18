@@ -19,6 +19,10 @@ const userSettings = sequelize.define('usersettings', {
     ephemeral_message: {
         type: Sequelize.BOOLEAN,
         allowNull: false
+    },
+    embed_color: {
+        type: Sequelize.STRING,
+        allowNull: false
     }
 });
 

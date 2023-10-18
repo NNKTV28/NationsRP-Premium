@@ -6,11 +6,15 @@ const moment = require("moment");
 const TicketModel = require("../models/ticket");
 const GuildModel = require("../models/guild.js");
 const ticketEvent = require("./ticketEvent.js");
+const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
   name: Events.InteractionCreate,
   once: false,
   async execute(interaction) {
+    let userRecord = await UserSettingsModel.findOne({
+      where: { user_id: interaction.user.id },
+    });
     const command = interaction.client.commands.get(interaction.commandName);
     console.log(interaction);
     if (interaction.isAutocomplete()) {
@@ -67,7 +71,7 @@ module.exports = {
       // Create the reason button and add it to the reason row
       // Create the embed
       const embed = new EmbedBuilder()
-      .setColor('#0099ff')
+      .setColor(`${userRecord.embed_color}`)
       .setTitle('Create Ticket')
       .setDescription(`Ticket channel created: ${ticketChannel}`)
       .setTimestamp();
