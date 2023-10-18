@@ -6,9 +6,11 @@ const Balance = require('./models/balance');
 const Inventory = require('./models/inventory');
 const Ticket = require('./models/ticket');
 const AdminRoles = require('./models/adminroles');
-const UserIncomeRedeemTime = require('./models/userIncomeRedeemTime');
 const UserSettings = require('./models/usersettings');
+const UserIncomeRedeemTime = require('./models/userIncomeRedeemTime');
+const UserItemRedeemTime = require('./models/userItemRedeemTime');
 
+UserItemRedeemTime.sync({force: true});
 UserIncomeRedeemTime.sync({force: true});
 Guild.sync({force: true});
 Store.sync({force: true});

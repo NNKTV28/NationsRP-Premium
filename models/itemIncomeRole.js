@@ -13,12 +13,12 @@ const itemIncomeRole = sequelize.define('itemincomerole', {
         type: Sequelize.STRING,
         allowNull: false
     },
-    ammount_to_recieve: {
-        type: Sequelize.STRING,
+    amount_to_recieve: {
+        type: Sequelize.INTEGER,
         allowNull: false
     },
-    timer_to_recieve: {
-        type: Sequelize.TIME,
+    cooldown_timer: {
+        type: Sequelize.STRING,
         allowNull: false
     },
 });

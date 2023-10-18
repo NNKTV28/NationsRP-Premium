@@ -48,7 +48,7 @@ module.exports = {
 
       interaction.editReply(`You successfully deposited ${amount}$ into the bank.`);
     } catch (error) {
-      console.error(error);
+      console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[DEPOSIT ERROR]`)} ` + `${error}`.bgRed);
       interaction.editReply("An error occurred while processing your deposit.");
     }
   },

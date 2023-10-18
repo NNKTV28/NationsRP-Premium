@@ -1,14 +1,16 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const itemIncomeRole = require('../../models/itemIncomeRole');
 const InventoryModel = require('../../models/inventory');
 const StoreModel = require('../../models/store');
 const UserSettingsModel = require("../../models/usersettings.js");
+const embedColors = require('../../utils/colors.js');
+const { INTEGER } = require('sequelize');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('add-item-income-role')
     .setDescription('Create an item income role.')
-    .addStringOption(option =>
+    .addRoleOption(option =>
       option.setName('role_id')
         .setDescription('The role ID')
         .setRequired(true)
@@ -37,13 +39,13 @@ module.exports = {
 
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
 
-    const roleID = interaction.options.getString('role_id');
+    const roleID = interaction.options.getRole('role_id').id;
     const itemName = interaction.options.getString('item_name');
     const amountToReceive = interaction.options.getString('amount_to_receive');
     const timerToReceive = interaction.options.getString('timer_to_receive');
 
     try {
-        // Check if the role ID is valid
+      // Check if the role ID is valid
       const role = interaction.guild.roles.cache.get(roleID);
       if (!role) {
         return interaction.editReply('The role ID is invalid.');
@@ -56,15 +58,21 @@ module.exports = {
       }
 
       // Check if the amount to receive is valid
-      const amount = parseInt(amountToReceive, 10);
-      if (amount <= 0) {
+      if (amountToReceive <= 0) {
         return interaction.editReply('The amount to receive must be a positive number.');
       }
-
+      const timerRegex = /^[0-2]?[0-9]:[0-5][0-9]:[0-5][0-9]$/; // Modified regex
       // Check if the timer to receive is valid
-      const timer = timerToReceive.split(':');
-      if (timer.length !== 3) {
-        return interaction.editReply('The timer to receive is invalid.');
+      if (!timerToReceive.match(timerRegex)) {
+        await interaction.editReply('Invalid timer to receive format. Format must be HH:MM:SS');
+      }
+      
+      // pass timerToRecieve to secconds
+      const timerToReceiveSeconds = timerToReceive.split(':').reduce((acc, curr) => acc * 60 + +curr);
+      console.log(timerToReceiveSeconds);
+      if (timerToReceiveSeconds < 60) {
+        await interaction.editReply('Timer to receive must be at least 1 minute.');
+        return console.log('Timer to receive must be at least 1 minute.');
       }
 
       // Check if the role already has an item role
@@ -75,13 +83,20 @@ module.exports = {
 
       // Create an income role entry in the database
       await itemIncomeRole.create({
+        guild_id: interaction.guild.id,
         role_id: roleID,
         item_to_recieve: itemName,
-        ammount_to_recieve: amountToReceive,
-        timer_to_recieve: timerToReceive,
+        amount_to_recieve: amountToReceive,
+        cooldown_timer: timerToReceive,
       });
 
-      interaction.editReply(`Item role created for role ID: ${roleID}`);
+      const recievedEmbed = new EmbedBuilder()
+      .setColor(`${embedColors.GENERAL_COLORS.GREEN}`)
+      .setTitle('Item role created')
+      .setDescription(`Item role created for role ID: ${roleID}`)
+      .setTimestamp(new Date());
+      interaction.editReply({ embeds: [recievedEmbed]} );
+
     } catch (error) {
       console.error(error);
       interaction.editReply('An error occurred while creating the income role.');

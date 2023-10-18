@@ -35,7 +35,7 @@ module.exports = {
         return interaction.editReply(reply);
       }
     } catch (error) {
-      console.error(error);
+      console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[INVENTORY ERROR]`)} ` + `${error}`.bgRed);
       interaction.editReply('An error occurred while fetching your inventory.');
     }
   },

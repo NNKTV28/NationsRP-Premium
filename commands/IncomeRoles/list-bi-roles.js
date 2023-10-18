@@ -15,7 +15,7 @@ module.exports = {
     });
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
     const balanceRoles = await balanceIncomeList.findAll({
-      attributes: ['role_id', 'ammount_to_recieve', 'cooldown_timer']
+      attributes: ['role_id', 'amount_to_recieve', 'cooldown_timer']
     });
 
     try {
@@ -28,7 +28,7 @@ module.exports = {
         {
           const timerToReceive = role.timer_to_recieve;
           const timerToReceiveSeconds = timerToReceive.split(':').reduce((acc, curr) => acc * 60 + +curr);
-          reply += `**${role.role_id}** - ${role.ammount_to_recieve}$ - ${timerToReceiveSeconds}h\n`;
+          reply += `**${role.role_id}** - ${role.amount_to_recieve}$ - ${timerToReceiveSeconds}h\n`;
         }
         return interaction.editReply(reply);
       }

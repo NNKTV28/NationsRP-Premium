@@ -8,7 +8,11 @@ const Ticket = require('../models/ticket');
 const AdminRoles = require('../models/adminroles');
 const BlackMarket = require('../models/blackMarket');
 const UserSettings = require('../models/usersettings');
+const UserIncomeRedeemTime = require('../models/userIncomeRedeemTime');
+const UserItemRedeemTime = require('../models/userItemRedeemTime');
 
+UserItemRedeemTime.sync({alter: true});
+UserIncomeRedeemTime.sync({alter: true});
 Guild.sync({alter: true});
 Store.sync({alter: true});
 ItemIncomeRole.sync({alter: true});

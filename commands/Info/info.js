@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder } = require("discord.js");
+const { SlashCommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, EmbedBuilder } = require("discord.js");
 const os = require("os");
 const UserSettingsModel = require("../../models/usersettings.js");
 
@@ -30,17 +30,17 @@ module.exports = {
     const ramUsage = ((totalMemory - freeMemory) / totalMemory) * 100;
     const formattedRamUsage = ramUsage.toFixed(2);
 
-    const selectorEmbed = {
-      color: userRecord.embed_color,
-      title: "Bot Information",
-      descriprion: "Bot Info menu",
-      timestamp: new Date(),
-    };
+    const selectorEmbed = new EmbedBuilder()
+      .setColor(`${userRecord.embed_color}`)
+      .setTitle("Bot Information")
+      .setDescription("Bot Info menu")
+      .setTimestamp(new Date())
+    
     const select = new StringSelectMenuBuilder()
 			.setCustomId('info_selection')
 			.setPlaceholder('Make a selection!')
 			.addOptions(
-				new StringSelectMenuBuilder()
+				new StringSelectMenuOptionBuilder()
 					.setLabel('Commands')
 					.setDescription('See the commands of the bot.')
 					.setValue('commands'),
@@ -58,10 +58,15 @@ module.exports = {
 			.addComponents(select);
     interaction.editReply(
       {
-        content: selectorEmbed,
+        embeds: [selectorEmbed],
         components: [selectionRow],
       }
     );
+
+    if(interaction.value == "bot-stats")
+    {
+      interaction.editReply("Commands");
+    }
     /*
     // Create the embed
     const embed = {

@@ -59,7 +59,7 @@ module.exports = {
         return interaction.editReply({ embeds: [itemsListEmbed] });
       }
     } catch (error) {
-      console.error(error);
+      console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[SHOP ERROR]`)} ` + `${error}`.bgRed);
       interaction.editReply('There was an error while getting the shop items.');
     }
   },

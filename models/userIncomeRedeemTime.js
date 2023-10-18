@@ -19,10 +19,6 @@ const userIncomeRedeemTime = sequelize.define('userincomeredeemtime', {
         type: Sequelize.STRING,
         allowNull: true
     },
-    item_redeemed_time: {
-        type: Sequelize.STRING,
-        allowNull: true
-    },
 });
 
 module.exports = userIncomeRedeemTime;
