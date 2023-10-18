@@ -1,5 +1,5 @@
 const BalanceModel = require('../models/balance');
-const Guild = require('../models/guild');
+const GuildModel = require('../models/guild');
 const color = require("colors");
 const moment = require("moment");
 
@@ -8,7 +8,7 @@ module.exports = {
   
   async execute(member) {
     try {
-      const guild = await Guild.findOne({
+      const guild = await GuildModel.findOne({
         where: { guild_id: member.guild.id },
       });
   
@@ -54,29 +54,34 @@ module.exports = {
         }else{
           try 
           {  
-            // Check if the user already has a balance entry (if not, create one)
-            if (!userBalance) {
-              // Create a new balance entry with default values
-              await BalanceModel.create({
-                user_id: member.id,
-                user_balance_cash: 1000,
-                user_balance_bank: 1000,
-              });
-            }
+            if (user.user.bot)
+            {
+              return;
+            }else{
+              // Check if the user already has a balance entry (if not, create one)
+              if (!userBalance) {
+                // Create a new balance entry with default values
+                await BalanceModel.create({
+                  user_id: member.id,
+                  user_balance_cash: 0,
+                  user_balance_bank: 0,
+                });
+              }
 
-            // Give role to user
-            if(welcomeRole) {
-              member.roles.add(welcomeRole.toString());
-            }
+              // Give role to user
+              if(welcomeRole) {
+                member.roles.add(welcomeRole.toString());
+              }
 
-            // Get the channel object from the channel ID
-            const channel = member.guild.channels.cache.get(WelcomeChannel);
+              // Get the channel object from the channel ID
+              const channel = member.guild.channels.cache.get(WelcomeChannel);
 
-            if(channel) {
-              const welcomeMessage = `${guild.welcomeMessage}`;
-              channel.send(welcomeMessage);
-            } else {
-              console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[INVALID WELCOME CHANNEL]`)} `);
+              if(channel) {
+                const welcomeMessage = `${guild.welcomeMessage}`;
+                channel.send(welcomeMessage);
+              } else {
+                console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[INVALID WELCOME CHANNEL]`)} `);
+              }
             }
           } catch (err) {
             console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[GUILD MEMBER ADD ERROR]`)} ` + `${err}`.bgRed);

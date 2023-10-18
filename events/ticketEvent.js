@@ -1,73 +1,42 @@
-const { Events, ModalBuilder } = require("discord.js");
+const { Events, ModalBuilder, TextInputBuilder, ComponentType, TextInputStyle, ActionRowBuilder, EmbedBuilder } = require("discord.js");
 const { errorWebhookURL } = require('../config.json');
 const { WebhookClient } = require("discord.js");
 const webhook = new WebhookClient({ url: errorWebhookURL });
-const color = require("colors");
-const moment = require("moment");
 const TicketModel = require("../models/ticket");
+const GuildModel = require("../models/guild.js");
 
 module.exports = {
   name: Events.ticketEvent,
   once: false,
   async execute(interaction) {
+    const guildID = interaction.guild.id;
     if (interaction.customId == "ticket_create") {
+      const ticketRecord = await GuildModel.findOne({
+        where: { guild_id: guildID },
+      });
       try {
-        console.log("Interaction received: ticket_create");
+        const parentCategory = ticketRecord.ticket_parent_category;
         // Handle ticket creation logic here
-        const ticketChannel = await interaction.guild.channels.create({
-            name: `Ticket - ${interaction.user.username}`,
-            parent: parentCategory ? parentCategory.value : null,
-            topic: `Ticket created by ${interaction.user.username}`,
-            permissionOverwrites: [
-              {
-                id: interaction.guild.roles.everyone,
-                deny: ['ViewChannel'],
-              },
-              {
-                id: interaction.user.id,
-                allow: ['ViewChannel'],
-              },
-            ],
-        });
         // Create the reason prompt
         const reasonPrompt = new ModalBuilder()
-        .setTitle('Provide Reason')
-        .setDescription('Please provide a reason for opening this ticket.')
-        .setRequired(true);
-
-        // Create the reason button and add it to the reason row
-
-        const reasonRow = new ActionRowBuilder()
-        .addComponents(reasonPrompt);
-
-        // Create the embed
-        const embed = new EmbedBuilder()
-        .setColor('#0099ff')
-        .setTitle('Create Ticket')
-        .setDescription(`Ticket channel created: ${ticketChannel}`)
-        .addFields(
-            {name: 'Reason:', value: 'Not provided'}
-        )
-        .setTimestamp();
-
-        // Send the initial embed
-        await interaction.reply({
-        embeds: [embed],
-        components: [reasonRow],
-        });
-
-        // Collect the reason response
-        const collector = interaction.channel.createMessageComponentCollector({
-        componentType: ComponentType.Button,
-        time: 60000, // 60 seconds
-        });
-
-        collector.on('collect', async (buttonInteraction) => {
-        if (buttonInteraction.customId === 'reason_button') {
-            await buttonInteraction.reply('Please provide a reason for opening this ticket.');
-        }
-        });
-
+        .setCustomId('user_reason_modal_input')
+        .setTitle('Provide Reason');
+        // modal title
+        const reason_modal_title = new TextInputBuilder()
+	  		.setCustomId('reason_modal_title')
+  			.setLabel("Title")
+			  .setStyle(TextInputStyle.Short);
+        // Modal body, a.k.a the description
+        const reason_modal_body = new TextInputBuilder()
+	  		.setCustomId('reason_modal_body')
+  			.setLabel("Describe the the issue?")
+			  .setStyle(TextInputStyle.Paragraph);
+        // Show the modal to the user
+		    const reason_prompt_title = new ActionRowBuilder().addComponents(reason_modal_title);
+		    const reason_prompt_body = new ActionRowBuilder().addComponents(reason_modal_body);
+        // add title and body to the modal
+        reasonPrompt.addComponents(reason_prompt_title, reason_prompt_body);
+        await interaction.showModal(reasonPrompt);
       } catch (error) {
         console.error(`Error while handling ticket creation:`, error);
         await interaction.reply({
