@@ -6,7 +6,7 @@ const moment = require("moment");
 const TicketModel = require("../models/ticket");
 const GuildModel = require("../models/guild.js");
 const ticketEvent = require("./ticketEvent.js");
-const UserSettingsModel = require("../../models/usersettings.js");
+const UserSettingsModel = require("../models/usersettings.js");
 
 module.exports = {
   name: Events.InteractionCreate,
