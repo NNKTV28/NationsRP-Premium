@@ -9,13 +9,11 @@ module.exports = {
       .setName("tester") // must be lower case
       .setDescription("A command to test stuff like embeds") // Command description
       .setDefaultMemberPermissions(PermissionFlagsBits.Administrator) // Allows the command to be used only by people with an Admin role
-      .addSubcommand((subcommand) =>
+    .addSubcommand((subcommand) =>
       subcommand
         .setName("embed")
         .setDescription("Test embed.")
-    ),
-    
-    
+    ),    
     async execute(interaction) {
         let userRecord = await UserSettingsModel.findOne({
         where: { user_id: interaction.user.id },
@@ -29,8 +27,7 @@ module.exports = {
             .setDescription("This is a test embed.")
             .setTimestamp()
             interaction.editReply({ embeds: [testEmbed] });
-
-        }        
+        }
       } catch (err) {
           // Log any errors through the console
         console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[TESTER ERROR]`)} ` + `${err}`.bgRed);
