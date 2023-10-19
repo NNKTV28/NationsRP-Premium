@@ -15,8 +15,6 @@ module.exports = {
         where: { guild_id: guildID },
       });
       try {
-        const parentCategory = ticketRecord.ticket_parent_category;
-        // Handle ticket creation logic here
         // Create the reason prompt
         const reasonPrompt = new ModalBuilder()
         .setCustomId('user_reason_modal_input')

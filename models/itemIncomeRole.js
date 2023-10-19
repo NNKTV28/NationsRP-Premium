@@ -2,12 +2,16 @@ const Sequelize = require('sequelize');
 const sequelize = require('../utils/database');
 
 const itemIncomeRole = sequelize.define('itemincomerole', {
+    id: {
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
     guild_id: {
         type: Sequelize.STRING,
     },
     role_id: {
         type: Sequelize.STRING,
-        primaryKey: true
     },
     item_to_recieve: {
         type: Sequelize.STRING,

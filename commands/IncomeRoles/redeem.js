@@ -9,7 +9,6 @@ const UserItemRedeemTime = require("../../models/userItemRedeemTime");
 const UserBalanceModel = require("../../models/balance");
 const UserSettingsModel = require("../../models/usersettings.js");
 
-
 const embedColors = require("../../utils/colors.js");
 const moment = require("moment");
 
@@ -24,10 +23,11 @@ module.exports = {
       where: { user_id: interaction.user.id },
     });
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
-    
     try {
       const guildMember = await interaction.guild.members.fetch(interaction.user.id);
       const roles = guildMember.roles.cache.keys();
+      console.log([...roles])
+      console.log(interaction.guild.id)
 
       const balanceIncomeRoles = await BalanceIncomeRoleModel.findAll({
         where: { guild_id: interaction.guild.id, role_id: [...roles] },
@@ -45,29 +45,29 @@ module.exports = {
         where: { user_id: interaction.user.id },
       });
 
-      
-
       // Create an embed to display redeemed items and balance
       const receivedEmbed = new EmbedBuilder()
         .setColor(`${embedColors.GENERAL_COLORS.GREEN}`)
         .setTitle("Redeemed Successfully")
         .setDescription("Redeemed successfully.");
 
-      // Redeem balance if roles exist
-      if (balanceIncomeRoles.length) {
-
+      // Redeem balance if the user has the role stored in the Database
+      
+      if (balanceIncomeRoles) 
+      {
+        console.log(`BalanceIncomeRoles detected: ${balanceIncomeRoles.length}`.green)
         if (!IncomeRedeemTime) {
           console.log("Creating redeem time for user");
-          await UserIncomeRedeemTimeModel.create({ user_id: interaction.user.id, balance_redeemed_time: Date.now() });
+          await UserIncomeRedeemTimeModel.create({
+            role_id: balanceIncomeRoles[0].role_id,
+            user_id: interaction.user.id,
+            balance_redeemed_time: Date.now() 
+            });
         } else {
           const currentTime = Date.now();
           const lastIncomeRedeemTime = IncomeRedeemTime.balance_redeemed_time || currentTime;
-          const cooldown = balanceIncomeRoles.reduce((acc, curr) => acc + parseInt(curr.timer_to_recieve) * 1000, 0);
+          const cooldown = balanceIncomeRoles.reduce((acc, curr) => acc + parseInt(curr.cooldown_timer) * 1000, 0);
           const timeElapsed = currentTime - lastIncomeRedeemTime;
-  
-          console.log(`Current Time: ${currentTime}`);
-          console.log(`Last Redeemed Time: ${lastIncomeRedeemTime}`);
-          console.log(`Cooldown: ${cooldown} milliseconds`);
   
           if (timeElapsed < cooldown) {
             const remainingCooldown = cooldown - timeElapsed;
@@ -97,14 +97,23 @@ module.exports = {
             console.log("Balance Redeemed");
           }
         }        
+      }else{
+        console.log(`no balanceIncomeRoles detected`.red)
       }
+
+
       // Redeem items if roles exist
-      if (itemIncomeRoles.length) {
+      if (itemIncomeRoles) {
+        console.log(`itemIncomeRoles detected: ${itemIncomeRoles.length}`.green)
         const userInventory = await userInventoryModel.findAll({
           where: { user_id: interaction.user.id },
         });
         if (!ItemIncomeRedeemTime) {
-          await ItemIncomeRedeemTime.create({ user_id: interaction.user.id, item_redeemed_time: Date.now() });
+          ItemIncomeRedeemTime = await UserItemRedeemTime.create({ 
+            role_id: itemIncomeRoles[0].role_id,
+            user_id: interaction.user.id,
+            item_redeemed_time: Date.now() 
+            });
         } else {
           const currentTime = Date.now();
           const lastItemRedeemTime = ItemIncomeRedeemTime.item_redeemed_time || currentTime;
@@ -122,8 +131,8 @@ module.exports = {
               }
             )
           } else {
-            // Update the balance_redeemed_time in the database to the current time
-            ItemIncomeRedeemTime.balance_redeemed_time = currentTime;
+            // Update the item_redeemed_time in the database to the current time
+            ItemIncomeRedeemTime.item_redeemed_time = currentTime;
             await ItemIncomeRedeemTime.save();
             for (const itemRole of itemIncomeRoles) {
               const existingItem = userInventory.find((item) => item.item_Name === itemRole.item_to_recieve);
@@ -144,6 +153,8 @@ module.exports = {
             }
           }
         }
+      }else{
+        console.log(`no itemIncomeRoles detected`.red)
       }
       // Edit the interaction reply with the embed
       await interaction.editReply({ embeds: [receivedEmbed] });

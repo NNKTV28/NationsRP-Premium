@@ -19,8 +19,6 @@ module.exports = {
     const members = await interaction.guild.members.fetch();
     // fetch all roles in a guild
     const roles = await interaction.guild.roles.fetch();
-    // Filter the roles that have the "ADMINISTRATOR" permission.
-    //const AdminRoles = interaction.guild.roles.cache.filter(roles.permissions.has(PermissionsBitField.Flags.Administrator))
 
     // Check if the member has the "ADMINISTRATOR" permission or is the owner of the bot.
     if (user.id == config.ownerIDS) {
