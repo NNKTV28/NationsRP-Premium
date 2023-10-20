@@ -38,7 +38,7 @@ module.exports = {
         { name: "Issue", value: `${interaction.options.getString("issue")}` }
       )
       const successEmbed = new EmbedBuilder()
-      .setColor(`${embedColors.GENERAL_COLORS.RED}`)
+      .setColor(`${embedColors.GENERAL_COLORS.GREEN}`)
         .setTitle("Report Issue")
         .setDescription("Issue reported to the Developer.")
         .addFields({ name: "Report successful:", value: `Thank you for the report, the developer will look into this...` });
