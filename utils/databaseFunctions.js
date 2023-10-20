@@ -15,8 +15,16 @@ const checkIfUserExists = () => {
 const addToUserInventory = () => {
 }
 
+const findAllBalanceIncomeRoles = () => {
+    const balanceRoles = balanceIncomeList.findAll({
+        attributes: ['role_id', 'amount_to_recieve', 'cooldown_timer']
+      });
+}
+    
+
 module.exports = {
     addUserToDB,
     checkIfUserExists,
     addToUserInventory,
+    findAllBalanceIncomeRoles,
 }
