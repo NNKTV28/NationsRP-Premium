@@ -1,7 +1,7 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const BalanceIncomeRole = require('../../models/balanceIncomeRole');
 const UserSettingsModel = require("../../models/usersettings.js");
-const embedColors = require('../../utils/colors.js');
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('add-income-role')
@@ -41,6 +41,7 @@ module.exports = {
 
       if (!timerToReceive.match(timerRegex)) {
         await interaction.editReply('Invalid timer to receive format. Format must be HH:MM:SS');
+        return console.log('Invalid timer to receive format. Format must be HH:MM:SS');
       }
 
       const incomeRole = await BalanceIncomeRole.findOne({ where: { role_id: roleID } });
@@ -56,26 +57,16 @@ module.exports = {
         await interaction.editReply('Timer to receive must be at least 1 minute.');
         return console.log('Timer to receive must be at least 1 minute.');
       }
-      // Check if the role already has an item role
-      const balanceRole = await BalanceIncomeRole.findOne({ role_id: roleID });
-      if (balanceRole) {
-        return interaction.editReply(`The role already has an item asigned`);
-      }
+
 
       // Create an income role entry in the database
       await BalanceIncomeRole.create({
         guild_id: interaction.guild.id,
         role_id: roleID,
-        amount_to_recieve: amountToReceive,
-        cooldown_timer: timerToReceive,
+        ammount_to_recieve: amountToReceive,
+        timer_to_recieve: timerToReceiveSeconds,
       });
-
-      const recievedEmbed = new EmbedBuilder()
-        .setColor(`${embedColors.GENERAL_COLORS.GREEN}`)
-        .setTitle('Income role created')
-        .setDescription(`Income role created for role ID: ${roleID}`)
-        .setTimestamp(new Date());
-      interaction.editReply({ embeds: [recievedEmbed]} );
+      interaction.editReply(`Income role created for role ID: ${roleID}`);
     } catch (error) {
       console.error(error);
       interaction.editReply('An error occurred while creating the income role.');

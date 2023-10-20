@@ -26,7 +26,7 @@ module.exports = {
 
         for (const role of itemIncomeRoles) 
         {
-            reply += `**${role.role_id}** - ${role.item_to_recieve} - ${role.amount_to_recieve} - ${role.timer_to_recieve}h`;
+            reply += `**${role.role_id}** - ${role.item_to_recieve} - ${role.ammount_to_recieve} - ${role.timer_to_recieve}h`;
         }
         return interaction.editReply(reply);
       }

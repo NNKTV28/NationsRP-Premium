@@ -1,9 +1,8 @@
-const { SlashCommandBuilder, ButtonBuilder, ActionRowBuilder, PermissionFlagsBits, MessageEmbed, MessageButton, MessageActionRow, EmbedBuilder, ComponentType, ChannelType, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, ButtonBuilder, ActionRowBuilder, PermissionFlagsBits, MessageEmbed, MessageButton, MessageActionRow, EmbedBuilder, ComponentType } = require('discord.js');
 const Globals = require("../../utils/globals.js");
 const GuildModel = require("../../models/guild.js");
 const UserSettingsModel = require("../../models/usersettings.js");
 const TicketModel = require("../../models/ticket.js");
-const { where } = require('sequelize');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,65 +28,49 @@ module.exports = {
   async execute(interaction) {
     // Global variables
     const guildID = interaction.guild.id;
+    // get all guilds
+    let guildRecord = await GuildModel.findOne({
+      where: { guild_id: guildID },
+    });
     // get user settings
     let userRecord = await UserSettingsModel.findOne({
       where: { user_id: interaction.user.id },
     });
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
+    // Ticket system variables
+    const parentCategory = interaction.options.getChannel("channel");
+    const category = interaction.options.getChannel("category")
 
     if (interaction.options.getSubcommand() === "ticket-system") {
-        // Ticket system variables
-        const buttonChannel = interaction.options.getChannel("channel");
-        const parentCategory = interaction.options.getChannel("parent-category");
         // check if the provided channel is visible to bot
-        if (!buttonChannel.viewable) {
+        if (!channel.viewable) {
             return interaction.editReply({
                 content: "The provided channel is not visible to me",
                 ephemeral: true
             })
         }
+
         // check if the provided category is actually a category
-        if (parentCategory.type !== ChannelType.GuildCategory) 
-        {
-          return interaction.editReply({
-            content: "The category you provided is invalid",
-            ephemeral: true
-          })
+        if (category.type !== ChannelType.GuildCategory) {
+            return interaction.editReply({
+                content: "The category you provided is invalid",
+                ephemeral: true
+            })
         }
 
         // check if the provided category is visible to bot
-        if (!parentCategory.viewable) {
+        if (!category.viewable) {
             return interaction.editReply({
                 content: "The provided category is not visible to me",
                 ephemeral: true
             })
         }
 
-        if (!parentCategory.permissionsFor(interaction.user.id).has("ManageChannels")) {
+        if (!category.permissionsFor(interaction.user.id).has("ManageChannels")) {
             return interaction.editReply({
-                content: "I'm missing PermissionFlagsBits.ManageChannels permissions to create ticket channel",
+                content: "The bot is missing manage-channels permissions to create ticket channel",
                 ephemeral: true
             })
-        }
-        const ticketRecord = await GuildModel.findOne({
-          where: { guild_id: guildID },
-        });
-        if(!ticketRecord)
-        {
-           await GuildModel.create(
-            {
-              ticket_parent_category: parentCategory.id,
-            }
-          )
-        }else{
-          await GuildModel.update(
-            {
-              ticket_parent_category: parentCategory.id,
-            },
-            {
-              where: { guild_id: guildID },
-            }
-          )
         }
         // this will create buttons 
         const button = new ActionRowBuilder()
@@ -100,12 +83,12 @@ module.exports = {
 
         // this will send confirm reply
         await interaction.editReply({
-            content: `The ticket has been setup to ${buttonChannel} successfully.`,
+            content: `The ticket has been setup to ${channel} successfully.`,
             ephemeral: true
         })
 
         // this will send the ticket setup to the provided channel
-        buttonChannel.send({
+        channel.send({
             components: [button],
         })
       
