@@ -1,9 +1,10 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const Store = require('../../models/store');
 const globals = require('../../utils/globals');
 const color = require("colors")
 const moment = require("moment");
 const UserSettingsModel = require("../../models/usersettings.js");
+const embedColor = require("../../utils/colors");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,6 +30,16 @@ module.exports = {
         .setDescription('The description of the item')
         .setRequired(true)
     )
+    .addRoleOption(RoleToBuyOption => RoleToBuyOption
+        .setName('role-to-buy')
+        .setDescription('The necesary role to be able to buy the item (can be null)')
+        .setRequired(false)
+    )
+    .addRoleOption(RoleToUseOption => RoleToUseOption
+        .setName('role-to-use')
+        .setDescription('The necesary role to be able to use the item (can be null)')
+        .setRequired(false)
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false),
 
@@ -43,6 +54,8 @@ module.exports = {
         const itemPrice = interaction.options.getInteger('price');
         const itemDescription = interaction.options.getString('description');
         const itemCuantity = interaction.options.getInteger('cuantity');
+        const roleToBuy = interaction.options.getRole('role-to-buy').id;
+        const roleToUse = interaction.options.getRole('role-to-use').id;
 
         const items = await Store.findAll({
             attributes: ['itemName', 'itemPrice', 'itemQuantity', 'itemDescription']
@@ -63,22 +76,52 @@ module.exports = {
                         itemName: itemName,
                         itemCuantity: 0,
                         itemPrice: itemPrice,
-                        itemDescription: itemDescription
+                        itemDescription: itemDescription,
+                        role_to_buy: roleToBuy,
+                        role_to_use: roleToUse
                     })
-                    interaction.editReply(`Added infinite ${itemName} to the shop.`);
+                    if(!roleToBuy){
+                        roleToBuy = "NULL"
+                    }
+                    if(!roleToUse){
+                        roleToUse = "NULL"
+                    }
+                    const addedItemEmbed = new EmbedBuilder()
+                        .setTitle(`Added infinite ${itemName} to the shop.`)
+                        .setColor(embedColor.GENERAL_COLORS.GREEN)
+                        .setDescription(`**Price:** ${itemPrice}$ \n **Role to buy:** ${roleToBuy} \n **Role to use:** ${roleToUse}`)
+                    interaction.editReply({embeds: [addedItemEmbed]});
                 }else{
                     await Store.create({
                         itemName: itemName,
                         itemCuantity: itemCuantity,
                         itemPrice: itemPrice,
-                        itemDescription: itemDescription
+                        itemDescription: itemDescription,
+                        role_to_buy: roleToBuy,
+                        role_to_use: roleToUse
                     });
-                    interaction.editReply(`Added ${itemCuantity} ${itemName} to the shop.`);
+                    if(!roleToBuy){
+                        roleToBuy = "NULL"
+                    }
+                    if(!roleToUse){
+                        roleToUse = "NULL"
+                    }
+                    const addedItemEmbed = new EmbedBuilder()
+                        .setTitle(`Added ${itemCuantity} ${itemName} to the shop.`)
+                        .setColor(embedColor.GENERAL_COLORS.GREEN)
+                        .setDescription(`Price: ${itemPrice} \n Role to buy: ${roleToBuy} \n Role to use: ${roleToUse}`)
+                    interaction.editReply({embeds: [addedItemEmbed]});
                 }
                 
             } catch (err) {
                 globals.sendWebhookError(err);
-                return console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[ADD SHOP ITEM ERROR]`)} ` + `${err}`.bgRed);
+                const errorEmbed = new EmbedBuilder()
+                    .setColor(`${embedColor.GENERAL_COLORS.RED}`)
+                    .setTitle("Redeem Error")
+                    .setDescription("An error occurred while redeeming.")
+                    .addFields({ name: "Error:", value: `${err}` });
+                await interaction.editReply({ embeds: [errorEmbed] });
+                console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[ADD SHOP ITEM ERROR]`)} ` + `${err}`.bgRed);
             }
         }
     },
