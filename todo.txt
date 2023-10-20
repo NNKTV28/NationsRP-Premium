@@ -1,0 +1,5 @@
+fix redee.js to make it check the cooldown timer correctly
+add role_id option to shop
+modify the add-shop-item to add the role_id
+modify the buy command to ckeck if the user has the role that is assigned to the shop item
+make te use command to check if the user has a role to use the item

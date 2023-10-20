@@ -17,6 +17,14 @@ const Store = sequelize.define('store', {
     itemDescription: {
         type: Sequelize.STRING,
         allowNull: false
+    },
+    role_to_use: {
+        type: Sequelize.STRING,
+        allowNull: true
+    },
+    role_to_buy: {
+        type: Sequelize.STRING,
+        allowNull: true
     }
 });
 
