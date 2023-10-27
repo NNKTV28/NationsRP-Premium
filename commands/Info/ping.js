@@ -17,8 +17,12 @@ module.exports = {
       .setDescription("Show discord bot latency.")
       .setDefaultMemberPermissions(PermissionFlagsBits.UseApplicationCommands),
 
+  /**
+   * @param {ChatInputCommandInteraction} interaction 
+   * @param {Client} client 
+   */
+
   async execute(client, interaction) {
-    
     let userRecord = await UserSettingsModel.findOne({
       where: { user_id: interaction.user.id },
     });

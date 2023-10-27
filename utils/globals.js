@@ -1,5 +1,5 @@
 const chance = require("chance").Chance();
-const { WebhookClient, EmbedBuilder } = require("discord.js");
+const { WebhookClient } = require("discord.js");
 const { errorWebhookURL, issueWebhookURL} = require("../config.json");
 const errorWebhook = new WebhookClient({ url: errorWebhookURL });
 const issueWebook = new WebhookClient({ url: issueWebhookURL });
@@ -33,24 +33,10 @@ const AdminRoles = require('../models/adminroles');
 
 // send errors to the webhook channel
 const sendWebhookError = (message) => {
-  const errorEmbed = new EmbedBuilder()
-    .setTitle("Error")
-    .setDescription(message)
-    .setColor(0xFF0000)
-
-  errorWebhook.send({embeds: [errorEmbed]});
+  errorWebhook.send(message);
 }
 const sendIssueWebhook  = () => {
-  const issueWebhookEmbed = new EmbedBuilder()
-    .setTitle("Issue")
-    .setColor("Yellow")
-    .setTimestamp()
-    .addFields({ name: "User:", value: `${interaction.user.tag}`})
-    .addFields({ name: "Command:", value: `${interaction.options.getString("command name")}`})
-    .addFields({ name: "Issue:", value: `${interaction.options.getString("issue")}`})
-    .setFooter({ text: "NationsRP Premium" });
-  issueWebook.send({embeds: [issueWebhookEmbed]});
-  //issueWebook.send(`**User: \`${interaction.user.tag}\`**\n**Command: \`${interaction.options.getString("command name")}\`**\n**Issue: \`${interaction.options.getString("issue")}\`**`);
+  issueWebook.send(`**User: \`${interaction.user.tag}\`**\n**Command: \`${interaction.options.getString("command name")}\`**\n**Issue: \`${interaction.options.getString("issue")}\`**`);
 }
 
 const commandsFolder = "./commands/";
