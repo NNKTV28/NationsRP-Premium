@@ -8,7 +8,8 @@ module.exports = {
   name: "guildMemberAdd",
   
   async execute(member) {
-    try {  
+    try {
+      const user = member.user;
       const userBalance = await BalanceModel.findOne({
         where: { user_id: member.id },
       });
