@@ -216,7 +216,7 @@ module.exports = {
       const errorEmbed = new EmbedBuilder()
         .setColor(`${embedColors.GENERAL_COLORS.RED}`)
         .setTitle("Collect Error")
-        .setDescription("An error occurred while collecting.")
+        .setDescription("An err occurred while collecting.")
         .addFields({ name: "Error:", value: `${err}` });
       await interaction.editReply({ embeds: [errorEmbed] });
     }

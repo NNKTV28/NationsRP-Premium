@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const globals = require("../../utils/globals.js");
 const GuildModel = require("../../models/guild.js");
 const UserSettingsModel = require("../../models/usersettings.js");

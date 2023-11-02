@@ -34,9 +34,9 @@ module.exports = {
       } else {
         interaction.editReply(`Income role with role ID ${roleID} not found.`);
       }
-    } catch (error) {
-      console.error(error);
-      interaction.editReply('An error occurred while deleting the income role.');
+    } catch (err) {
+      console.error(err);
+      interaction.editReply('An err occurred while deleting the income role.');
     }
   },
 };

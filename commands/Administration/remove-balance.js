@@ -87,9 +87,9 @@ module.exports = {
         await userBalances.save();
         interaction.editReply(`Succesfully removed **${amount}**${globals.coinEmoji} to **${targetUser.displayName}'s** balance.`);
       }
-    } catch (error) {
-      console.error(error);
-      await interaction.editReply('An error occurred while adding balance.');
+    } catch (err) {
+      console.error(err);
+      await interaction.editReply('An err occurred while adding balance.');
     }
   },
 };

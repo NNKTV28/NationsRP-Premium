@@ -4,6 +4,7 @@ const globals = require("../../utils/globals.js");
 const color = require("colors");
 const moment = require("moment");
 const UserSettingsModel = require("../../models/usersettings.js");
+const embedColors = require('../../utils/colors.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -86,7 +87,7 @@ module.exports = {
         }
         interaction.editReply({ embeds: [baltopEmbed] });
     } catch (err) {
-        await interaction.editReply('An error occurred while fetching the balance.');
+        await interaction.editReply('An err occurred while fetching the balance.');
         return console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[BALTOP ERROR]`)} ` + `${err}`.bgRed);
     }
   },

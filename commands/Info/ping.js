@@ -65,8 +65,8 @@ module.exports = {
             })
         ],
       });
-    } catch (error) {
-      globals.sendWebhookError(error);
+    } catch (err) {
+      globals.sendWebhookError(err);
     }
   }
 };

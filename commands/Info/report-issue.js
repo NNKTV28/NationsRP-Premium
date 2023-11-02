@@ -49,10 +49,9 @@ module.exports = {
       const errorEmbed = new EmbedBuilder()
       .setColor(`${embedColors.GENERAL_COLORS.RED}`)
         .setTitle("Report Issue  Error")
-        .setDescription("An error occurred while reporting an issue.")
+        .setDescription("An err occurred while reporting an issue.")
         .addFields({ name: "Error:", value: `${err}` });
       await interaction.editReply({ embeds: [errorEmbed] });
     }
-
   },
 };

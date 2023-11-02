@@ -30,9 +30,9 @@ module.exports = {
         }
         return interaction.editReply(reply);
       }
-    } catch (error) {
-      console.error(error);
-      interaction.editReply('An error occurred while fetching the income items.');
+    } catch (err) {
+      console.error(err);
+      interaction.editReply('An err occurred while fetching the income items.');
     }
   },
 };

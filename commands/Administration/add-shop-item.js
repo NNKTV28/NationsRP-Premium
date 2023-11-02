@@ -118,7 +118,7 @@ module.exports = {
                 const errorEmbed = new EmbedBuilder()
                     .setColor(`${embedColor.GENERAL_COLORS.RED}`)
                     .setTitle("Redeem Error")
-                    .setDescription("An error occurred while redeeming.")
+                    .setDescription("An err occurred while redeeming.")
                     .addFields({ name: "Error:", value: `${err}` });
                 await interaction.editReply({ embeds: [errorEmbed] });
                 console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[ADD SHOP ITEM ERROR]`)} ` + `${err}`.bgRed);

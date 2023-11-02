@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const os = require("os");
 const UserSettingsModel = require("../../models/usersettings.js");
 

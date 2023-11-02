@@ -1,14 +1,11 @@
-const {
-  SlashCommandBuilder,
-  PermissionFlagsBits,
-  ChannelType,
-  EmbedBuilder,
-} = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder} = require("discord.js");
 const embedColors = require("../../utils/colors.js");
 const Store = require("../../models/store");
 const BalanceModel = require("../../models/balance");
 const Inventory = require("../../models/inventory");
 const UserSettingsModel = require("../../models/usersettings.js");
+const color = require("colors");
+const moment = require("moment");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -47,19 +44,19 @@ module.exports = {
       for (const roleId of roles) {
         const response = await processBuyAction(userId, itemName, amount, roleId);
 
-        if (response.error) {
+        if (response.err) {
           const errorEmbed = new EmbedBuilder()
             .setColor(`${embedColors.GENERAL_COLORS.RED}`)
             .setTitle("Error")
-            .setDescription(response.error);
+            .setDescription(response.err);
           return interaction.editReply({ embeds: [errorEmbed] });
         }
 
         return interaction.editReply({ embeds: [response.embed] });
       }
-    } catch (error) {
-      console.error(error);
-      interaction.editReply("An error occurred while processing your purchase.");
+    } catch (err) {
+      console.error(err);
+      interaction.editReply("An err occurred while processing your purchase.");
     }
   },
 };
@@ -70,7 +67,7 @@ async function processBuyAction(userId, itemName, amount, roleId) {
   });
 
   if (!userBalance) {
-    return { error: "User balance not found." };
+    return { err: "User balance not found." };
   }
 
   const matchingBuyRoles = await Store.findOne({
@@ -94,21 +91,21 @@ async function processBuyAction(userId, itemName, amount, roleId) {
   });
 
   if (!itemInStore) {
-    return { error: `Item "${itemName}" does not exist in the shop.` };
+    return { err: `Item "${itemName}" does not exist in the shop.` };
   }
 
   if (amount === 0) {
-    return { error: "Amount must be greater than 0." };
+    return { err: "Amount must be greater than 0." };
   }
 
   if (amount > itemInStore.itemQuantity) {
     return {
-      error: `There isn't enough of this item in the store. Currently, there's only ${itemInStore.itemQuantity} ${itemName} left`,
+      err: `There isn't enough of this item in the store. Currently, there's only ${itemInStore.itemQuantity} ${itemName} left`,
     };
   }
 
   if (userBalance.user_balance_cash < itemInStore.itemPrice * amount) {
-    return { error: "You don't have enough cash to buy this item." };
+    return { err: "You don't have enough cash to buy this item." };
   }
 
   const oldUserBalance = userBalance.user_balance_cash;
@@ -321,10 +318,10 @@ module.exports = {
           .setTimestamp();
         return interaction.editReply({ embeds: [succesfulBuyEmbed] });
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       interaction.editReply(
-        "An error occurred while processing your purchase."
+        "An err occurred while processing your purchase."
       );
     }
   },

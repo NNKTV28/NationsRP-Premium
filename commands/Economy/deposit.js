@@ -1,6 +1,9 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const BalanceModel = require("../../models/balance"); // Import your Balance model
 const UserSettingsModel = require("../../models/usersettings.js");
+const embedColors = require('../../utils/colors.js');
+const color = require("colors");
+const moment = require("moment");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -47,9 +50,14 @@ module.exports = {
       await userBalance.save();
 
       interaction.editReply(`You successfully deposited ${amount}$ into the bank.`);
-    } catch (error) {
-      console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[DEPOSIT ERROR]`)} ` + `${error}`.bgRed);
-      interaction.editReply("An error occurred while processing your deposit.");
+    } catch (err) {
+      console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[DEPOSIT ERROR]`)} ` + `${err}`.bgRed);
+      const errorEmbed = new EmbedBuilder()
+        .setColor(`${embedColors.GENERAL_COLORS.RED}`)
+        .setTitle("/Deposit Error")
+        .setDescription("An err occurred while executing the /deposit command.")
+        .addFields({ name: "Error:", value: `${err}` });
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   },
 };

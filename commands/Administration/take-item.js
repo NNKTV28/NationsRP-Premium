@@ -69,9 +69,9 @@ module.exports = {
         }
         interaction.editReply(`Item "${itemName}" has been given to ${user.tag} ${amount} times.`);
       }
-    } catch (error) {
-      console.error(error);
-      globals.sendWebhookError(error);
+    } catch (err) {
+      console.error(err);
+      globals.sendWebhookError(err);
     }
   }
 };

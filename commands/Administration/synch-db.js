@@ -22,7 +22,7 @@ module.exports = {
         console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.green(`[DB SYNCH]`)} ` + `${color.bold.green(`[SUCCESS]`)} ` + `DB Synched!`);
         return;        
       } catch (err) {
-        console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[DB SYNCH ERROR]`)} ` + `${err}`.bgRed);
+        console.error(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[DB SYNCH ERROR]`)} ` + `${err}`.bgRed);
       }
     }
 }

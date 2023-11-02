@@ -47,7 +47,7 @@ module.exports = {
             interaction.client.commands.set(newCommand.data.name, newCommand);
             await interaction.reply(`Command \`${newCommand.data.name}\` was reloaded!`);
 
-          } catch (error) { 
+          } catch (err) { 
             console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[RELOAD COMMANDS ERROR]`)} ${err}`)
           }
           if (!command) {

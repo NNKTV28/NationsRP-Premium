@@ -66,10 +66,10 @@ module.exports = {
         }
         interaction.followUp(`Item "${itemName}" has been given to ${user.tag} ${amount} times.`);
       }
-    } catch (error) {
-      console.error(error);
-      globals.sendWebhookError(error);
-      interaction.followUp('An error occurred while processing your request.');
+    } catch (err) {
+      console.error(err);
+      globals.sendWebhookError(err);
+      interaction.followUp('An err occurred while processing your request.');
     }
   }
 };

@@ -3,6 +3,10 @@ const BlackMarketModel = require('../../models/blackMarket');
 const Balance = require('../../models/balance');
 const globals = require('../../utils/globals');
 const UserSettingsModel = require("../../models/usersettings.js");
+const embedColors = require('../../utils/colors.js');
+const color = require("colors");
+const moment = require("moment");
+
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -62,10 +66,10 @@ module.exports = {
 
         return interaction.editReply({ embeds: [itemsListEmbed] });
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       
-      interaction.editReply('There was an error while getting the shop items.');
+      interaction.editReply('There was an err while getting the shop items.');
     }
   },
 };

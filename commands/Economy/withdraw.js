@@ -1,6 +1,9 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const BalanceModel = require("../../models/balance"); // Import your Balance model
 const UserSettingsModel = require("../../models/usersettings.js");
+const embedColors = require('../../utils/colors.js');
+const color = require("colors");
+const moment = require("moment");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -47,9 +50,14 @@ module.exports = {
       await userBalance.save();
 
       interaction.editReply(`You successfully withdrew ${amount}$ from the bank and added it to your cash balance.`);
-    } catch (error) {
-      console.error(error);
-      interaction.editReply("An error occurred while processing your withdrawal.");
+    } catch (err) {
+      console.error(err);
+      const errorEmbed = new EmbedBuilder()
+        .setColor(`${embedColors.GENERAL_COLORS.RED}`)
+        .setTitle("Withdraw Error")
+        .setDescription("An err occurred while executing the /use command.")
+        .addFields({ name: "Error:", value: `${err}` });
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   },
 };

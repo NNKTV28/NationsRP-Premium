@@ -3,8 +3,6 @@ const { errorWebhookURL } = require('../config.json');
 const webhook = new WebhookClient({ url: errorWebhookURL });
 const color = require("colors");
 const moment = require("moment");
-const TicketModel = require("../models/ticket");
-const ticketEvent = require("./ticketEvent.js");
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -34,28 +32,14 @@ module.exports = {
       try
       {
         await command.execute(interaction); 
-      } catch (error) {
-        console.error(`Error while executing "${interaction.commandName}" command:`, error);
+      } catch (err) {
+        console.error(`Error while executing "${interaction.commandName}" command:`, err);
         await interaction.reply({
-          content: "There was an error while executing this command. Our team has been notified.",
+          content: "There was an err while executing this command. Our team has been notified.",
           ephemeral: true,
         });
       }
       
-    }
-    
-    // ticket creation interaction
-    if (interaction.customId == "ticket_create") {
-      try {
-        console.log("Interaction received: ticket_create")
-        await ticketEvent.execute(interaction);
-      } catch (error) {
-        console.error(`Error while handling ticket creation:`, error);
-        await interaction.reply({
-          content: "There was an error while handling your ticket creation. Our team has been notified.",
-          ephemeral: true,
-        });
-      }
     }
   },
 };

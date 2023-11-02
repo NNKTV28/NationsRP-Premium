@@ -82,9 +82,9 @@ module.exports = {
       });
 
       interaction.editReply(`Item role created for role ID: ${roleID}`);
-    } catch (error) {
-      console.error(error);
-      interaction.editReply('An error occurred while creating the income role.');
+    } catch (err) {
+      console.error(err);
+      interaction.editReply('An err occurred while creating the income role.');
     }
   },
 };

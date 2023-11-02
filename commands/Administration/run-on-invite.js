@@ -83,7 +83,7 @@ module.exports = {
         console.log("Done!");
       } catch (err) {
         console.error(err);
-        interaction.reply("An error occurred while processing the command.");
+        interaction.reply("An err occurred while processing the command.");
       }
     } else {
       interaction.reply("You don't have the permission to use this command!");

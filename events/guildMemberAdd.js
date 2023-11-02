@@ -20,7 +20,7 @@ module.exports = {
 
       if (!userRecord) {
         console.log(`User ${user.id} is not in the database, adding it now`);
-        if (user.user.bot) {
+        if (user.bot) {
           userRecord = await UserSettingsModel.create({
             guild_id: guildID,
             user_id: user.id,
@@ -39,7 +39,7 @@ module.exports = {
         } 
       }
       // check if the User is a bot
-      if (user.user.bot) {
+      if (user.bot) {
         return;
       }else{
         if (!userBalance) {
@@ -52,7 +52,8 @@ module.exports = {
         }
       }      
     } catch (err) {
-      console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[GUILD MEMBER ADD ERROR]`)} ` + `${err}`.bgRed);
+        console.error(err);
+      //console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[GUILD MEMBER ADD ERROR]`)} ` + `${err}`.bgRed);
     }
   }
 };

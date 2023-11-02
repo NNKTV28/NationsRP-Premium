@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder } = require('discord.js');
 const BalanceModel = require('../../models/balance');
 const globals = require("../../utils/globals.js");
 const UserSettingsModel = require("../../models/usersettings.js");
@@ -37,10 +37,15 @@ module.exports = {
       }else{
         interaction.editReply(`User: ${interaction.user}\nCash Balance: ${userBalances.user_balance_cash.toLocaleString()} ${globals.cashEmoji}\nBank Balance: ${userBalances.user_balance_bank.toLocaleString()} ${globals.BankEmoji}\n\n`);
       }
-    } catch (error) {
-      console.error(error);
-      // Handle the error appropriately, e.g., send an error message to the user.
-      await interaction.editReply('An error occurred while fetching the balance.');
+    } catch (err) {
+      console.error(err);
+      // Handle the err appropriately, e.g., send an err message to the user.
+      const errorEmbed = new EmbedBuilder()
+      .setColor(`${embedColors.GENERAL_COLORS.RED}`)
+        .setTitle("/Balance Error")
+        .setDescription("An err occurred while executing the /balance command.")
+        .addFields({ name: "Error:", value: `${err}` });
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   },
 };

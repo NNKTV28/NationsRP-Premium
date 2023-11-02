@@ -1,6 +1,9 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const Inventory = require('../../models/inventory'); // Import your Inventory model
 const UserSettingsModel = require("../../models/usersettings.js");
+const embedColors = require('../../utils/colors.js');
+const color = require("colors");
+const moment = require("moment");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -34,9 +37,14 @@ module.exports = {
 
         return interaction.editReply(reply);
       }
-    } catch (error) {
-      console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[INVENTORY ERROR]`)} ` + `${error}`.bgRed);
-      interaction.editReply('An error occurred while fetching your inventory.');
+    } catch (err) {
+      console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[INVENTORY ERROR]`)} ` + `${err}`.bgRed);
+      const errorEmbed = new EmbedBuilder()
+        .setColor(`${embedColors.GENERAL_COLORS.RED}`)
+        .setTitle("/inventory Error")
+        .setDescription("An error occurred while executing the /inventoy command.")
+        .addFields({ name: "Error:", value: `${err}` });
+      await interaction.editReply({ embeds: [errorEmbed] });
     }
   },
 };

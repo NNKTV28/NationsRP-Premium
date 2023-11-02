@@ -133,9 +133,9 @@ module.exports = {
           await buttonInteraction.reply('Please provide a reason for opening this ticket.');
         }
       });
-    } catch (error) {
-      console.error(error);
-      await interaction.reply('An error occurred while creating the ticket.');
+    } catch (err) {
+      console.error(err);
+      await interaction.reply('An err occurred while creating the ticket.');
     }
   },
 };

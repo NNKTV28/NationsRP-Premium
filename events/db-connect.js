@@ -5,6 +5,7 @@ const moment = require('moment');
 const color = require('colors');
 const dbPath = 'MainDB.sqlite'; // Path to your SQLite database file
 
+
 const webhook = new WebhookClient({ url: databaseLogWebhookURL });
 
 async function connectToDatabase() {
@@ -28,9 +29,9 @@ async function connectToDatabase() {
     });
 
   } catch (err) {
-    console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[DATABASE CONNECTION ERROR]`)} ` + `${err}`.bgRed);
-    // If there's an error, send an error message to the webhook
-    webhook.send(`[ERROR] >> SQLite >> Failed to connect to SQLite! >> Error: ${error}`);
+    console.error(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[DATABASE CONNECTION ERROR]`)} ` + `${err}`.bgRed);
+    // If there's an err, send an err message to the webhook
+    webhook.send(`[ERROR] >> SQLite >> Failed to connect to SQLite! >> Error: ${err}`);
   }
 }
 

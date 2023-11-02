@@ -33,9 +33,9 @@ module.exports = {
       await deleteItemRole.destroy();
 
       interaction.editReply(`Item-income removed for role ID: ${roleID}`);
-    } catch (error) {
-      console.error(error);
-      interaction.editReply('An error occurred while removing the item-income.');
+    } catch (err) {
+      console.error(err);
+      interaction.editReply('An err occurred while removing the item-income.');
     }
   },
 };
