@@ -14,7 +14,7 @@ module.exports = {
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false),
-
+    
   async execute(interaction) {
     let userRecord = await UserSettingsModel.findOne({
       where: { user_id: interaction.user.id },
