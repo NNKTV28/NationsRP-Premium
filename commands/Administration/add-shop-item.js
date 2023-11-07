@@ -45,17 +45,29 @@ module.exports = {
 
     async execute(interaction) 
     {
+        const guildID = interaction.guild.id;
         let userRecord = await UserSettingsModel.findOne({
             where: { user_id: interaction.user.id },
         });
         await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
         
-        const itemName = interaction.options.getString('item');
-        const itemPrice = interaction.options.getInteger('price');
-        const itemDescription = interaction.options.getString('description');
-        const itemCuantity = interaction.options.getInteger('cuantity');
-        const roleToBuy = interaction.options.getRole('role-to-buy').id;
-        const roleToUse = interaction.options.getRole('role-to-use').id;
+        let itemName = interaction.options.getString('item');
+        let itemPrice = interaction.options.getInteger('price');
+        let itemDescription = interaction.options.getString('description');
+        let itemQuantity = interaction.options.getInteger('cuantity');
+        let roleToBuy = interaction.options.getRole('role-to-buy');
+        let roleToUse = interaction.options.getRole('role-to-use');
+        
+        if(!roleToBuy){
+            roleToBuy = guildID
+        }else{
+            roleToBuy = roleToBuy.id
+        }
+        if(!roleToUse){
+            roleToUse = guildID
+        }else{
+            roleToUse = roleToUse.id
+        }
 
         const items = await Store.findAll({
             attributes: ['itemName', 'itemPrice', 'itemQuantity', 'itemDescription']
@@ -71,45 +83,36 @@ module.exports = {
             }
         } else {
             try {
-                if(itemCuantity == 0){
+                if(itemQuantity == 0){
                     await Store.create({
                         itemName: itemName,
-                        itemCuantity: 0,
+                        itemQuantity: 0,
                         itemPrice: itemPrice,
                         itemDescription: itemDescription,
                         role_to_buy: roleToBuy,
                         role_to_use: roleToUse
                     })
-                    if(!roleToBuy){
-                        roleToBuy = "NULL"
-                    }
-                    if(!roleToUse){
-                        roleToUse = "NULL"
-                    }
+                    
+                    itemQuantity = "Infinite"
                     const addedItemEmbed = new EmbedBuilder()
                         .setTitle(`Added infinite ${itemName} to the shop.`)
                         .setColor(embedColor.GENERAL_COLORS.GREEN)
-                        .setDescription(`**Price:** ${itemPrice}$ \n **Role to buy:** ${roleToBuy} \n **Role to use:** ${roleToUse}`)
+                        .setDescription(`**Price:** ${itemPrice}$\n **Quantity:** ${itemQuantity} \n **Role to buy:** ${roleToBuy} \n **Role to use:** ${roleToUse}`)
                     interaction.editReply({embeds: [addedItemEmbed]});
                 }else{
                     await Store.create({
                         itemName: itemName,
-                        itemCuantity: itemCuantity,
+                        itemQuantity: itemQuantity,
                         itemPrice: itemPrice,
                         itemDescription: itemDescription,
                         role_to_buy: roleToBuy,
                         role_to_use: roleToUse
                     });
-                    if(!roleToBuy){
-                        roleToBuy = "NULL"
-                    }
-                    if(!roleToUse){
-                        roleToUse = "NULL"
-                    }
+                    
                     const addedItemEmbed = new EmbedBuilder()
-                        .setTitle(`Added ${itemCuantity} ${itemName} to the shop.`)
+                        .setTitle(`Added ${itemQuantity} ${itemName} to the shop.`)
                         .setColor(embedColor.GENERAL_COLORS.GREEN)
-                        .setDescription(`Price: ${itemPrice} \n Role to buy: ${roleToBuy} \n Role to use: ${roleToUse}`)
+                        .setDescription(`Price: ${itemPrice} \n **Quantity:** ${itemQuantity} \n Role to buy: ${roleToBuy} \n Role to use: ${roleToUse}`)
                     interaction.editReply({embeds: [addedItemEmbed]});
                 }
                 

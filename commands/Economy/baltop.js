@@ -1,9 +1,9 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const BalanceModel = require('../../models/balance');
-const globals = require("../../utils/globals.js");
-const color = require("colors");
-const moment = require("moment");
 const UserSettingsModel = require("../../models/usersettings.js");
+const globals = require("../../utils/globals.js");
+const moment = require("moment");
+const color = require("colors");
 const embedColors = require('../../utils/colors.js');
 
 module.exports = {
@@ -16,79 +16,62 @@ module.exports = {
         .setDescription('The currency you want to see the baltop')
         .setRequired(true).setAutocomplete(true)),
     async autocomplete(interaction) {
-		const focusedValue = interaction.options.getFocused().toLowerCase() ;
-		const choices = ['cash', 'bank'];
-		const filtered = choices.filter(choice => choice.startsWith(focusedValue));
-		await interaction.respond(
-			filtered.map(choice => ({ name: choice, value: choice })),
-		);
-	},
+        const focusedValue = interaction.options.getFocused().toLowerCase();
+        const choices = ['cash', 'bank'];
+        const filtered = choices.filter(choice => choice.startsWith(focusedValue));
+        await interaction.respond(
+            filtered.map(choice => ({ name: choice, value: choice })),
+        );
+    },
   async execute(interaction) {
     let userRecord = await UserSettingsModel.findOne({
       where: { user_id: interaction.user.id },
     });
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
-    const user = interaction.user;
-    const member = interaction.guild.members.cache.get(user.id);
     const guild = interaction.guild;
-    const users = await guild.members.fetch();
+
     try {
-        let fields = [];
-        let topCashBalances = await BalanceModel.findAll({
-            order: [[`user_balance_cash`, 'DESC']],
+        const currency = interaction.options.getString('currency');
+        const topBalances = await BalanceModel.findAll({
+            order: [[`user_balance_${currency}`, 'DESC']],
             limit: 10 // Display top 10 balances, you can change this number as per your requirement
         });
-        let topBankBalances = await BalanceModel.findAll({
-            order: [[`user_balance_bank`, 'DESC']],
-            limit: 10 // Display top 10 balances, you can change this number as per your requirement
-        });
+
+        if (topBalances.length === 0) {
+            return interaction.editReply({ content: `No one with ${currency} found`, ephemeral: true });
+        }
+
+        // Fetch members using the user_ids from topBalances
+        const userIDs = topBalances.map(balance => balance.user_id);
+        const members = await guild.members.fetch({ user: userIDs });
+
         const baltopEmbed = new EmbedBuilder()
             .setTitle("Nations RP | Diplomatic Leaderboard")
-            .addFields(fields);
+            .setDescription(`Leaderboard for ${currency}`)
+            .setColor(embedColors.GENERAL_COLORS.GREEN);
 
-        if (interaction.options.getString('currency') === 'cash') 
-        {
-          topCashBalances.forEach((balance, index) => {
-            //const users = interaction.guild.members.fetch(balance.user_id);
-            Promise.all(users.map(async (user) => {
-              if(interaction.guild.id == balance.guild_id)
-              {
-                fields.push
-                (
-                  {
-                    name: `${index + 1}. ${users.displayName}`,
-                    value: `${balance[`user_balance_cash`].toLocaleString()} ${globals.cashEmoji}`,
-                    inline: false
-                  }
-                );
-              }else{
-                return baltopEmbed.setDescription("No one with cash found");
-              }
-            }));
-          });
-        }else if (interaction.options.getString('currency') === 'bank') 
-        {
-          topBankBalances.forEach((balance, index) => {
-          const user = interaction.guild.members.fetch(balance.user_id);
-          if(interaction.guild.id == balance.guild_id)
-          {
-            fields.push
-            (
-              {
-                name: `${index + 1}. ${user.displayName}`,
-                value: `${balance[`user_balance_bank`].toLocaleString()} ${globals.BankEmoji}`,
-                inline: false
-              }
-            );
-          }else{
-            return baltopEmbed.setDescription("No one with bank found");
-          }
-         });
+        for (let index = 0; index < topBalances.length; index++) {
+            const balance = topBalances[index];
+            const user = members.get(balance.user_id);
+
+            if (user) {
+                baltopEmbed.addFields({
+                    name: `${index + 1}. ${user.displayName}`,
+                    value: `${balance[`user_balance_${currency}`].toLocaleString()} ${currency === 'cash' ? globals.cashEmoji : globals.BankEmoji}`,
+                    inline: false,
+                });
+            }
         }
         interaction.editReply({ embeds: [baltopEmbed] });
     } catch (err) {
-        await interaction.editReply('An err occurred while fetching the balance.');
-        return console.log(`${color.bold.bgBlue(`[${moment().format("dddd - DD/MM/YYYY - hh:mm:ss", true)}]`)} ` + `${color.bold.red(`[BALTOP ERROR]`)} ` + `${err}`.bgRed);
+        console.error(err);
+        const errorEmbed = new EmbedBuilder()
+            .setColor(`${embedColors.GENERAL_COLORS.RED}`)
+            .setTitle("/baltop Error")
+            .setDescription("An error occurred while executing the /baltop command.")
+            .addFields({ name: "Error:", value: `${err}` 
+            });
+        return await interaction.editReply({ embeds: [errorEmbed] });
     }
   },
 };

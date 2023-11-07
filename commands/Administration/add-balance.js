@@ -1,6 +1,7 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder } = require('discord.js');
 const BalanceModel = require('../../models/balance');
 const globals = require("../../utils/globals.js");
+const embedColor = require("../../utils/colors.js");
 const UserSettingsModel = require("../../models/usersettings.js");
 module.exports = {
   data: new SlashCommandBuilder()
@@ -36,8 +37,6 @@ module.exports = {
 
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
 
-    let addingNew = false; // Use let instead of const for reassignment
-
     try {
       const targetUser = interaction.options.getMember('user');
       const amount = interaction.options.getInteger('amount');
@@ -56,38 +55,29 @@ module.exports = {
         where: { user_id: targetUser.id },
       });
 
-      if (!userBalances) {
-        addingNew = true;
-        userBalances = await BalanceModel.create({
-          user_id: targetUser.id,
-          user_balance_cash: 0, // Set initial cash balance to 0
-          user_balance_bank: 0, // Set initial bank balance to 0
-        });
-      }
-
-      if (addingNew) {
+      const addedBalanceEmbed = new EmbedBuilder()
+        .setColor(`${embedColor.GENERAL_COLORS.GREEN}`)
+        .setTitle("Added Balance")
+      
         if (addToCash) {
           userBalances.user_balance_cash += amount;
+          addedBalanceEmbed.addFields({ name: `Added cash money to ${targetUser.displayName}:`, value: `${amount}${globals.cashEmoji}` });
         }
         if (addToBank) {
           userBalances.user_balance_bank += amount;
+          addedBalanceEmbed.addFields({ name: `Added bank money to ${targetUser.displayName}:`, value: `${amount}${globals.BankEmoji}` });
         }
         await userBalances.save();
         
-        interaction.editReply(`Balance added to the user: ${targetUser.displayName} Amount: ${amount}${globals.coinEmoji}.`);
-      } else {
-        if (addToCash) {
-          userBalances.user_balance_cash += amount;
-        }
-        if (addToBank) {
-          userBalances.user_balance_bank += amount;
-        }
-        await userBalances.save();
-        interaction.editReply(`Added **${amount}**${globals.coinEmoji} to **${targetUser.displayName}'s** balance.`);
-      }
+        return interaction.editReply({ embeds: [addedBalanceEmbed] });
     } catch (err) {
       console.error(err);
-      await interaction.editReply('An err occurred while adding balance.');
+      const errorEmbed = new EmbedBuilder()
+        .setColor(`${globals.embedColors.GENERAL_COLORS.RED}`)
+        .setTitle("Add Balance Error")
+        .setDescription("An error occurred while executing the /add-balance command.")
+        .addFields({ name: "Error:", value: `${err}`});
+      return interaction.editReply({ embeds: [errorEmbed] });
     }
   },
 };

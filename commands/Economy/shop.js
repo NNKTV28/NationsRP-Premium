@@ -17,7 +17,7 @@ module.exports = {
     .addStringOption((option) =>
       option
       .setName("item")
-      .setDescription("Info about the specifyed item")
+      .setDescription("Info about the specified item")
       .setRequired(false)
     )
 
@@ -66,8 +66,9 @@ module.exports = {
             where: { user_id: user.id },
           });
 
+
           let Unlimited = item.itemQuantity;
-          if(Unlimited == null){
+          if(Unlimited == 0){
             Unlimited = "Unlimited"
           }else{
             Unlimited = item.itemQuantity
