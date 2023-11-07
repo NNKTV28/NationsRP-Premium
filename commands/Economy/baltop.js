@@ -50,13 +50,12 @@ module.exports = {
             .setDescription(`Leaderboard for ${currency}`)
             .setColor(embedColors.GENERAL_COLORS.GREEN);
 
-        for (let index = 0; index < topBalances.length; index++) {
-            const balance = topBalances[index];
-            const user = members.get(balance.user_id);
+        for (const [index, balance] of topBalances.entries()) {
+            const member = members.get(balance.user_id);
 
-            if (user) {
+            if (member) {
                 baltopEmbed.addFields({
-                    name: `${index + 1}. ${user.displayName}`,
+                    name: `${index + 1}. ${member.displayName}`,
                     value: `${balance[`user_balance_${currency}`].toLocaleString()} ${currency === 'cash' ? globals.cashEmoji : globals.BankEmoji}`,
                     inline: false,
                 });

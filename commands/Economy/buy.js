@@ -1,11 +1,9 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder} = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder} = require("discord.js");
 const embedColors = require("../../utils/colors.js");
 const Store = require("../../models/store");
 const BalanceModel = require("../../models/balance");
 const Inventory = require("../../models/inventory");
-const UserSettingsModel = require("../../models/usersettings.js");
-const color = require("colors");
-const moment = require("moment");
+const UserSettingsModel = require("../../models/usersettings.js");;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -30,20 +28,16 @@ module.exports = {
       where: { user_id: interaction.user.id },
     });
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
-
-    const userId = interaction.user.id;
+    const userId = interaction.user.id;    
     // fetch the roles of the guild depending on the interaction of the user who used the command
-    const guildMember = await interaction.guild.members.fetch(
-      interaction.user.id
-    );
+    const guildMember = await interaction.guild.members.fetch(interaction.user.id);
     const roles = [...guildMember.roles.cache.keys()];
     const itemName = interaction.options.getString("item");
     const amount = interaction.options.getInteger("amount");
-
+    
     try {
       for (const roleId of roles) {
         const response = await processBuyAction(userId, itemName, amount, roleId);
-
         if (response.err) {
           const errorEmbed = new EmbedBuilder()
             .setColor(`${embedColors.GENERAL_COLORS.RED}`)
@@ -51,28 +45,31 @@ module.exports = {
             .setDescription(response.err);
           return interaction.editReply({ embeds: [errorEmbed] });
         }
-
         return interaction.editReply({ embeds: [response.embed] });
       }
     } catch (err) {
       console.error(err);
-      interaction.editReply("An err occurred while processing your purchase.");
+      return interaction.editReply("An err occurred while processing your purchase.");
     }
   },
 };
 
 async function processBuyAction(userId, itemName, amount, roleId) {
-  const userBalance = await BalanceModel.findOne({
+  let userBalance = await BalanceModel.findOne({
     where: { user_id: userId },
   });
-
+  
   if (!userBalance) {
     return { err: "User balance not found." };
   }
 
   const matchingBuyRoles = await Store.findOne({
-    where: { itemName: itemName, role_to_use: roleId },
+    where: { itemName: itemName, role_to_buy: roleId },
   });
+  /*const matchingBuyRoles = await Store.findOne(
+    (role) => role.role_to_buy === roleId
+  );*/
+  
 
   if (!matchingBuyRoles) {
     const noBuyRole = new EmbedBuilder()
@@ -108,22 +105,25 @@ async function processBuyAction(userId, itemName, amount, roleId) {
     return { err: "You don't have enough cash to buy this item." };
   }
 
-  const oldUserBalance = userBalance.user_balance_cash;
+  let oldUserBalance = userBalance.user_balance_cash;
   userBalance.user_balance_cash -= itemInStore.itemPrice * amount;
   await userBalance.save();
 
-  const response = await handleUserInventory(userId, itemName, amount, itemInStore);
+  let response = await handleUserInventory(userId, itemName, amount, itemInStore, oldUserBalance);
 
   return {
     embed: response,
   };
 }
 
-async function handleUserInventory(userId, itemName, amount, itemInStore) {
-  const userInventory = await Inventory.findOne({
+async function handleUserInventory(userId, itemName, amount, itemInStore, oldUserBalance) {
+  let userInventory = await Inventory.findOne({
     where: { user_id: userId, item_Name: itemName },
   });
-
+  let userBalance = await BalanceModel.findOne({
+    where: { user_id: userId },
+  });
+  
   const oldUserItem = userInventory ? userInventory.item_Amount : 0;
 
   if (!userInventory || userInventory.length == 0) {
@@ -131,6 +131,7 @@ async function handleUserInventory(userId, itemName, amount, itemInStore) {
       user_id: userId,
       item_Name: itemName,
       item_Amount: amount,
+      // Not sure if to add the role_to_use to the inventory table or fetch it from the store table
       role_to_use: itemInStore.role_to_use,
     });
 

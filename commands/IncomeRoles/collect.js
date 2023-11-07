@@ -86,9 +86,7 @@ module.exports = {
             if (timeElapsed < cooldown) {
               const remainingCooldown = cooldown - timeElapsed;
               const remainingSeconds = Math.ceil(remainingCooldown / 1000);
-              const remainingTime = moment
-                .utc(remainingSeconds * 1000)
-                .format("HH:mm:ss");
+              const remainingTime = moment.utc(remainingSeconds * 1000).format("HH:mm:ss");
               receivedEmbed.addFields({
                 name: "Balance not collected",
                 value: `You can redeem again in ${remainingTime} Hours.`,
@@ -105,8 +103,7 @@ module.exports = {
                   user_balance_bank: 0,
                 });
               } else {
-                balance.user_balance_cash +=
-                  balanceIncomeRole.amount_to_recieve;
+                balance.user_balance_cash += balanceIncomeRole.amount_to_recieve;
               }
               await balance.save();
 

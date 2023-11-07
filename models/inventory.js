@@ -14,6 +14,10 @@ const Inventory = sequelize.define('inventory', {
     item_Amount: {
         type: Sequelize.INTEGER,
         allowNull: false
+    },
+    role_to_use: {
+        type: Sequelize.STRING,
+        allowNull: false
     }
 });
 
