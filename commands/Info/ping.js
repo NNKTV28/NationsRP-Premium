@@ -23,12 +23,14 @@ module.exports = {
    */
 
   async execute(client, interaction) {
+    let userID = interaction.user.id;
     let userRecord = await UserSettingsModel.findOne({
-      where: { user_id: interaction.user.id },
+      where: { user_id: userID },
     });
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
-
+    
     try {
+      const user = interaction.user.id;
       const ws = "https://panel.riotnodes.co.uk/server/d904932f";
       // Function Uptime
       let days = Math.floor(client.uptime / 86400000)
