@@ -6,13 +6,11 @@ const BlackMarketModel = require('../models/blackMarket')
 const GuildModel = require('../models/guild');
 const UserSettingsModel = require('../models/usersettings')
 
-const addUserToDB = () => {
-        
-}
-const checkIfUserExists = () => {
-}
-
-const addToUserInventory = () => {
+const searchUserInventory = (interaction) => {
+    let userID = interaction.user.id;
+    const userInventory = UserSettingsModel.findAll({
+        where: { user_id: interaction.user.id}
+    });
 }
 
 const findAllBalanceIncomeRoles = () => {
@@ -23,8 +21,6 @@ const findAllBalanceIncomeRoles = () => {
     
 
 module.exports = {
-    addUserToDB,
-    checkIfUserExists,
-    addToUserInventory,
+    searchUserInventory,
     findAllBalanceIncomeRoles,
 }

@@ -39,8 +39,13 @@ const sendIssueWebhook  = () => {
   issueWebook.send(`**User: \`${interaction.user.tag}\`**\n**Command: \`${interaction.options.getString("command name")}\`**\n**Issue: \`${interaction.options.getString("issue")}\`**`);
 }
 
-const commandsFolder = "./commands/";
+const getUserRoles = (interaction) => {
+  const guildMember = interaction.guild.members.fetch(interaction.user.id);
+  const roles = [...guildMember.roles.cache.keys()];
+  return roles;
+}
 
+// reset database
 const resetDatabase = async () => {
 Guild.sync({alter: true});
 Store.sync({alter: true});
@@ -65,8 +70,8 @@ module.exports = {
   YellowEmoji,
   RedEmoji,
   // Quick copy paste functions
+  getUserRoles,
   sendWebhookError,
   resetDatabase,
   sendIssueWebhook,
-  commandsFolder
 };
