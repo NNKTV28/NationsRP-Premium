@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js --trace-deprecations --trace-warnings"
   },
   "author": "NNKtv28",
   "license": "Apache-2.0",

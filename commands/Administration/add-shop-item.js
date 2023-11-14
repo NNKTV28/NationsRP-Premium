@@ -21,8 +21,8 @@ module.exports = {
         .setRequired(true)
     )
     .addIntegerOption(CuantityOption => CuantityOption
-        .setName('cuantity')
-        .setDescription('The cuantity of the item, set 0 for infinite')
+        .setName('quantity')
+        .setDescription('The Quantity of the item, set 0 for infinite')
         .setRequired(true)
     )
     .addStringOption(DescriptionOption => DescriptionOption
@@ -54,7 +54,7 @@ module.exports = {
         let itemName = interaction.options.getString('item');
         let itemPrice = interaction.options.getInteger('price');
         let itemDescription = interaction.options.getString('description');
-        let itemQuantity = interaction.options.getInteger('cuantity');
+        let itemQuantity = interaction.options.getInteger('Quantity');
         let roleToBuy = interaction.options.getRole('role-to-buy');
         let roleToUse = interaction.options.getRole('role-to-use');
         

@@ -1,11 +1,11 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-const Store = require('../../models/store');
+const Store = require('../../models/store.js');
 const globals = require("../../utils/globals.js");
 const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("delete-shop-item")
+    .setName("remove-shop-item")
     .setDescription("Remove an item from the shop.")
     .addStringOption(itemOption => itemOption
         .setName('item')
