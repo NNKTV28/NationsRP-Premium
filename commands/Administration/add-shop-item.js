@@ -57,6 +57,12 @@ module.exports = {
         let itemQuantity = interaction.options.getInteger('Quantity');
         let roleToBuy = interaction.options.getRole('role-to-buy');
         let roleToUse = interaction.options.getRole('role-to-use');
+
+        if(itemQuantity === null){
+            itemQuantity = 0
+        }else{
+            itemQuantity = itemQuantity
+        }
         
         if(!roleToBuy){
             roleToBuy = guildID
