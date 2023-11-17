@@ -1,21 +1,20 @@
-const Guild = require('../models/guild');
-const Store = require('../models/store');
-const ItemIncomeRole = require('../models/itemIncomeRole');
-const BalanceIncomeRole = require('../models/balanceIncomeRole');
-const Balance = require('../models/balance');
-const Inventory = require('../models/inventory');
-const Ticket = require('../models/ticket');
-const AdminRoles = require('../models/adminroles');
-const BlackMarket = require('../models/blackMarket');
-const UserSettings = require('../models/usersettings');
-
-Guild.sync({alter: true});
-Store.sync({alter: true});
-ItemIncomeRole.sync({alter: true});
-BalanceIncomeRole.sync({alter: true});
-Balance.sync({alter: true});
-Inventory.sync({alter: true});
-Ticket.sync({alter: true});
-AdminRoles.sync({alter: true});
-BlackMarket.sync({alter: true});
-UserSettings.sync({alter: true});
+const models = [
+    require('../models/guild'),
+    require('../models/store'),
+    require('../models/itemIncomeRole'),
+    require('../models/balanceIncomeRole'),
+    require('../models/balance'),
+    require('../models/inventory'),
+    require('../models/ticket'),
+    require('../models/adminroles'),
+    require('../models/blackMarket'),
+    require('../models/usersettings'),
+    require('../models/userIncomeRedeemTime'),
+    require('../models/userItemRedeemTime'),
+  ];
+  
+  // Sync all models
+  models.forEach((model) => {
+    model.sync({ force: true, alter: true });
+  });
+  

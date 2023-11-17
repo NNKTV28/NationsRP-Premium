@@ -7,17 +7,21 @@ const userIncomeRedeemTime = sequelize.define('userincomeredeemtime', {
         autoIncrement: true,
         primaryKey: true
     },
+    guild_id:{
+        type: Sequelize.STRING,
+        allowNull: false
+    },
     role_id:{
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: false
     },
     user_id:{
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: false
     },
     balance_redeemed_time: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: false
     },
 });
 

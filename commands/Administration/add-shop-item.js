@@ -54,15 +54,9 @@ module.exports = {
         let itemName = interaction.options.getString('item');
         let itemPrice = interaction.options.getInteger('price');
         let itemDescription = interaction.options.getString('description');
-        let itemQuantity = interaction.options.getInteger('Quantity');
+        let itemQuantity = interaction.options.getInteger('quantity');
         let roleToBuy = interaction.options.getRole('role-to-buy');
         let roleToUse = interaction.options.getRole('role-to-use');
-
-        if(itemQuantity === null){
-            itemQuantity = 0
-        }else{
-            itemQuantity = itemQuantity
-        }
         
         if(!roleToBuy){
             roleToBuy = guildID
@@ -89,38 +83,27 @@ module.exports = {
             }
         } else {
             try {
-                if(itemQuantity == 0){
-                    await Store.create({
-                        itemName: itemName,
-                        itemQuantity: 0,
-                        itemPrice: itemPrice,
-                        itemDescription: itemDescription,
-                        role_to_buy: roleToBuy,
-                        role_to_use: roleToUse
-                    })
-                    
-                    itemQuantity = "Infinite"
-                    const addedItemEmbed = new EmbedBuilder()
-                        .setTitle(`Added infinite ${itemName} to the shop.`)
-                        .setColor(embedColor.GENERAL_COLORS.GREEN)
-                        .setDescription(`**Price:** ${itemPrice}$\n **Quantity:** ${itemQuantity} \n **Role to buy:** ${roleToBuy} \n **Role to use:** ${roleToUse}`)
-                    interaction.editReply({embeds: [addedItemEmbed]});
+                // add item to the shop
+                await Store.create({
+                    itemName: itemName,
+                    itemQuantity: itemQuantity,
+                    itemPrice: itemPrice,
+                    itemDescription: itemDescription,
+                    role_to_buy: roleToBuy,
+                    role_to_use: roleToUse
+                });
+                // create embed
+                const addedItemEmbed = new EmbedBuilder()
+                    .setColor(embedColor.GENERAL_COLORS.GREEN)
+
+                if(itemQuantity === 0){
+                    addedItemEmbed.setTitle(`Added infinite ${itemName} to the shop.`)    
+                    addedItemEmbed.setDescription(`**Price:** ${itemPrice}$\n **Quantity:** Infinite \n **Role to buy:** ${roleToBuy} \n **Role to use:** ${roleToUse}`)
                 }else{
-                    await Store.create({
-                        itemName: itemName,
-                        itemQuantity: itemQuantity,
-                        itemPrice: itemPrice,
-                        itemDescription: itemDescription,
-                        role_to_buy: roleToBuy,
-                        role_to_use: roleToUse
-                    });
-                    
-                    const addedItemEmbed = new EmbedBuilder()
-                        .setTitle(`Added ${itemQuantity} ${itemName} to the shop.`)
-                        .setColor(embedColor.GENERAL_COLORS.GREEN)
-                        .setDescription(`Price: ${itemPrice} \n **Quantity:** ${itemQuantity} \n Role to buy: ${roleToBuy} \n Role to use: ${roleToUse}`)
-                    interaction.editReply({embeds: [addedItemEmbed]});
+                    addedItemEmbed.setTitle(`Added ${itemQuantity} ${itemName} to the shop.`)
+                    addedItemEmbed.setDescription(`Price: ${itemPrice} \n **Quantity:** ${itemQuantity} \n Role to buy: ${roleToBuy} \n Role to use: ${roleToUse}`)
                 }
+                interaction.editReply({embeds: [addedItemEmbed]});
                 
             } catch (err) {
                 globals.sendWebhookError(err);

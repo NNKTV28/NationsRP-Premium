@@ -7,17 +7,21 @@ const userItemRedeemTime = sequelize.define('useritemredeemtime', {
         autoIncrement: true,
         primaryKey: true
     },
+    guild_id:{
+        type: Sequelize.STRING,
+        allowNull: false
+    },
     role_id:{
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: false
     },
     user_id:{
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: false
     },
     item_redeemed_time: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: false
     },
 });
 

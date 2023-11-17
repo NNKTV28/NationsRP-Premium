@@ -37,34 +37,31 @@ module.exports = {
     try {
       console.log(roleID);
       // Check that timer to receive format is HH:MM:SS
-      const timerRegex = /^[0-2]?[0-9]:[0-5][0-9]:[0-5][0-9]$/; // Modified regex
+      const timerRegex = /^[0-2]?[0-4]:[0-5][0-9]:[0-5][0-9]$/; // Modified regex
 
       if (!timerToReceive.match(timerRegex)) {
         await interaction.editReply('Invalid timer to receive format. Format must be HH:MM:SS');
         return console.log('Invalid timer to receive format. Format must be HH:MM:SS');
       }
 
-      const incomeRole = await BalanceIncomeRole.findOne({ where: { role_id: roleID } });
+      const incomeRole = await BalanceIncomeRole.findOne({ where: { guild_id: interaction.guild.id, role_id: roleID } });
       if (incomeRole) {
         await interaction.editReply('Income role already exists for this role ID.');
-        return console.log('Income role already exists for this role ID.');
       }
       // pass timerToRecieve to secconds
-      const timerToReceiveSeconds = timerToReceive.split(':').reduce((acc, curr) => acc * 60 + +curr);
+      const timerToReceiveSeconds = timerToReceive.split(':').reduce((acc, curr) => acc * 60 + curr);
       console.log(timerToReceiveSeconds);
 
       if (timerToReceiveSeconds < 60) {
         await interaction.editReply('Timer to receive must be at least 1 minute.');
         return console.log('Timer to receive must be at least 1 minute.');
       }
-
-
       // Create an income role entry in the database
       await BalanceIncomeRole.create({
         guild_id: interaction.guild.id,
         role_id: roleID,
-        ammount_to_recieve: amountToReceive,
-        timer_to_recieve: timerToReceiveSeconds,
+        amount_to_recieve: amountToReceive,
+        cooldown_timer: timerToReceiveSeconds,
       });
       interaction.editReply(`Income role created for role ID: ${roleID}`);
     } catch (err) {

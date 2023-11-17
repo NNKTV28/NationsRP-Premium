@@ -1,12 +1,10 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder, embedLength } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const color = require("colors")
 const moment = require("moment");
 
 const Store = require('../../models/store');
 const Balance = require('../../models/balance');
 const globals = require("../../utils/globals.js");
-const config = require("../../config.json");
-const GuildModel = require('../../models/guild');
 const UserSettingsModel = require("../../models/usersettings.js");
 const embedColors = require('../../utils/colors.js');
 
@@ -14,13 +12,6 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("shop")
     .setDescription("View items available in the shop.")
-    .addStringOption((option) =>
-      option
-      .setName("item")
-      .setDescription("Info about the specified item")
-      .setRequired(false)
-    )
-
     .setDMPermission(false),
 
   async execute(interaction) {
@@ -41,22 +32,6 @@ module.exports = {
           .setDescription('There are no items in the shop.');
         return interaction.editReply({ embeds: [noItemsEmbed] });
       } else {
-        if(interaction.options.getString("item")){
-          const item = await Store.findOne({
-            where: { itemName: interaction.options.getString("item") },
-          });
-          if(!item){
-            return interaction.editReply("That item doesnt exist.")
-          }
-          const userBalance = await Balance.findOne({
-            where: { user_id: user.id },
-          });
-          if(userBalance && userBalance.user_balance_cash >= item.itemPrice){
-            return interaction.editReply(`You can afford this item.`)
-          }else{
-            return interaction.editReply(`You cant afford this item.`)
-          }
-        }
         const itemsListEmbed = new EmbedBuilder()
           .setTitle('  - Shop -  ')
           .setColor(`${embedColors.GENERAL_COLORS.GREEN}`)
@@ -65,7 +40,6 @@ module.exports = {
           const userBalance = await Balance.findOne({
             where: { user_id: user.id },
           });
-
 
           let Unlimited = item.itemQuantity;
           if(Unlimited == 0){

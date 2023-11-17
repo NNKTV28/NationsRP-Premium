@@ -8,7 +8,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('add-item-income-role')
     .setDescription('Create an item income role.')
-    .addStringOption(option =>
+    .addRoleOption(option =>
       option.setName('role_id')
         .setDescription('The role ID')
         .setRequired(true)
@@ -37,7 +37,7 @@ module.exports = {
 
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
 
-    const roleID = interaction.options.getString('role_id');
+    const roleID = interaction.options.getRole('role_id').id;
     const itemName = interaction.options.getString('item_name');
     const amountToReceive = interaction.options.getString('amount_to_receive');
     const timerToReceive = interaction.options.getString('timer_to_receive');
@@ -75,10 +75,11 @@ module.exports = {
 
       // Create an income role entry in the database
       await itemIncomeRole.create({
+        guild_id: interaction.guild.id,
         role_id: roleID,
         item_to_recieve: itemName,
-        ammount_to_recieve: amountToReceive,
-        timer_to_recieve: timerToReceive,
+        amount_to_recieve: amountToReceive,
+        cooldown_timer: timerToReceive,
       });
 
       interaction.editReply(`Item role created for role ID: ${roleID}`);

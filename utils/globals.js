@@ -1,8 +1,9 @@
 const chance = require("chance").Chance();
-const { WebhookClient } = require("discord.js");
+const { WebhookClient, EmbedBuilder } = require("discord.js");
 const { errorWebhookURL, issueWebhookURL} = require("../config.json");
 const errorWebhook = new WebhookClient({ url: errorWebhookURL });
 const issueWebook = new WebhookClient({ url: issueWebhookURL });
+const embedColors = require("./colors.js");
 
 // Emoji variables. Change these out with your own.
 // Discord bots have "Nitro", so this is fine. To grab the id, escape the emoji with a backslash (e.g \:emoji:)
@@ -45,17 +46,15 @@ const getUserRoles = (interaction) => {
   return roles;
 }
 
-// reset database
-const resetDatabase = async () => {
-Guild.sync({alter: true});
-Store.sync({alter: true});
-ItemIncomeRole.sync({alter: true});
-BalanceIncomeRole.sync({alter: true});
-Balance.sync({alter: true});
-Inventory.sync({alter: true});
-Ticket.sync({alter: true});
-AdminRoles.sync({alter: true});
-}
+const sendErrorEmbed = (filename, err, interaction) => {
+  const errorEmbed = new EmbedBuilder()
+    .setColor(`${embedColors.GENERAL_COLORS.RED}`)
+    .setTitle(`${filename} Error`)
+    .setDescription(`An error occurred while executing ${filename}.`)
+    .addFields({ name: "Error:", value: `${err}` });
+
+  interaction.editReply({ embeds: [errorEmbed] });
+};
 
 module.exports = {
   // Emojis
@@ -72,6 +71,6 @@ module.exports = {
   // Quick copy paste functions
   getUserRoles,
   sendWebhookError,
-  resetDatabase,
+  sendErrorEmbed,
   sendIssueWebhook,
 };

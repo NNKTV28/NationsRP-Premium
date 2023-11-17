@@ -1,6 +1,6 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const balanceIncomeList = require('../../models/balanceIncomeRole');
-const globals = require("../../utils/globals.js");
+const colors = require("../../utils/colors.js");
 const UserSettingsModel = require("../../models/usersettings.js");
 
 module.exports = {
@@ -14,23 +14,32 @@ module.exports = {
       where: { user_id: interaction.user.id },
     });
     await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
+    /*const balanceRoles = await balanceIncomeList.findAll({
+      attributes: [ 'guild_id', 'role_id', 'amount_to_recieve', 'cooldown_timer']
+    });*/
     const balanceRoles = await balanceIncomeList.findAll({
-      attributes: ['role_id', 'ammount_to_recieve', 'cooldown_timer']
+      where: {guild_id: interaction.guild.id}
     });
 
     try {
+      const redeemEmbed = new EmbedBuilder()
+        .setTitle('  - Balance Income Roles -  ')
+        .setColor(`${colors.GENERAL_COLORS.GREEN}`);
       if (!balanceRoles) {
         return interaction.editReply('There are no item roles yet.');
       } else {
-        let reply = 'Balance roles:\n\n';
-
         for (const role of balanceRoles) 
         {
-          const timerToReceive = role.timer_to_recieve;
-          const timerToReceiveSeconds = timerToReceive.split(':').reduce((acc, curr) => acc * 60 + +curr);
-          reply += `**${role.role_id}** - ${role.ammount_to_recieve}$ - ${timerToReceiveSeconds}h\n`;
+          //const timerToReceive = role.timer_to_recieve;
+          //const timerToReceiveSeconds = timerToReceive.split(':').reduce((acc, curr) => acc * 60 + +curr);
+          //redeemEmbed.setDescription(`**<@&${role.role_id}>** - ${role.ammount_to_recieve}$ - ${timerToReceiveSeconds}h\n`);
+          redeemEmbed.addFields(
+            {name: "Role: ", value: `<@&${role.role_id}>`},
+            {name: "Ammount to recieve: ", value: `${role.amount_to_recieve}$`, inline: true},
+            {name: "Cooldown: ", value: `${role.cooldown_timer}`, inline: true}
+          );
         }
-        return interaction.editReply(reply);
+        return interaction.editReply({embeds: [redeemEmbed]});
       }
     } catch (err) {
       console.error(err);
