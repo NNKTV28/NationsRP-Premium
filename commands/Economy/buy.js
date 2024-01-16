@@ -106,11 +106,12 @@ async function processBuyAction(userId, itemName, amount, roles) {
   if (amount === 0) {
     return { err: "Amount must be greater than 0." };
   }
-
-  if (amount > itemInStore.itemQuantity) {
-    return {
-      err: `There isn't enough of this item in the store. Currently, there's only ${itemInStore.itemQuantity} ${itemName} left`,
-    };
+  if(itemInStore.itemQuantity > 0){
+    if (amount > itemInStore.itemQuantity) {
+      return {
+        err: `There isn't enough of this item in the store. Currently, there's only ${itemInStore.itemQuantity} ${itemName} left`,
+      };
+    }
   }
 
   // Check if the user has enough cash to buy the item
@@ -120,7 +121,9 @@ async function processBuyAction(userId, itemName, amount, roles) {
 
   // Store the old user balance and update the balance after the purchase
   let oldUserBalance = userBalance.user_balance_cash;
-  userBalance.user_balance_cash -= itemInStore.itemPrice * amount;
+  let price = itemInStore.itemPrice * amount;
+  console.log(price);
+  userBalance.user_balance_cash -= price;
   await userBalance.save();
 
   // Handle user inventory and return success response
@@ -186,11 +189,13 @@ async function handleUserInventory(userId, itemName, amount, itemInStore, oldUse
       }
     }
   }
+  
   // Create a success response embed
+  let price = itemInStore.itemPrice * amount;
   const successEmbed = new EmbedBuilder()
     .setColor(embedColors.GENERAL_COLORS.GREEN)
     .setTitle("Successful Buy")
-    .setDescription(`You successfully bought "${itemName}" for ${itemInStore.itemPrice}$.`)
+    .setDescription(`You successfully bought "${itemName}" for ${price}$.`)
     .addFields(
       {
         name: `Item ${itemName} added:`,
@@ -198,7 +203,7 @@ async function handleUserInventory(userId, itemName, amount, itemInStore, oldUse
       },
       {
         name: `New Balance: ${userBalance.user_balance_cash}`,
-        value: `${oldUserBalance} - ${itemInStore.itemPrice} = ${userBalance.user_balance_cash}`,
+        value: `${oldUserBalance} - ${price} = ${userBalance.user_balance_cash}`,
       }
     )
     .setTimestamp();

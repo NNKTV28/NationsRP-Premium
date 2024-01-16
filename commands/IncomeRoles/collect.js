@@ -31,16 +31,6 @@ module.exports = {
       const guildMember = await interaction.guild.members.fetch(interaction.user.id);
       const roles = [...guildMember.roles.cache.keys()];
 
-      // Find the balance income roles stored in the Database
-      const balanceIncomeRoles = await BalanceIncomeRoleModel.findAll({
-        where: { guild_id: interaction.guild.id, role_id: roles },
-      });
-
-      // Find the item income roles stored in the Database
-      const itemIncomeRoles = await ItemIncomeRoleModel.findAll({
-        where: { guild_id: interaction.guild.id, role_id: roles },
-      });
-
       // Find or create the balance redeem timer for a user
       let incomeRedeemTime = await UserIncomeRedeemTimeModel.findOne({
         where: { guild_id: interaction.guild.id, user_id: interaction.user.id },
@@ -54,10 +44,30 @@ module.exports = {
         });
       }
 
+      // Update the balance redeem time in the database
+      await UserIncomeRedeemTimeModel.updateOne(
+        { guild_id: interaction.guild.id, user_id: interaction.user.id },
+        { $set: { balance_redeemed_time: Date.now() } }
+      );
+
       // Find the balance of a user
       let balance = await UserBalanceModel.findOne({
         where: { guild_id: interaction.guild.id, user_id: interaction.user.id },
       });
+
+      // Update or create the balance
+      balance = balance || (await UserBalanceModel.create({
+        guild_id: interaction.guild.id,
+        user_id: interaction.user.id,
+        user_balance_cash: 0,
+        user_balance_bank: 0,
+      }));
+
+      // Update the balance using $inc
+      await UserBalanceModel.updateOne(
+        { guild_id: interaction.guild.id, user_id: interaction.user.id },
+        { $inc: { user_balance_cash: balanceIncomeRole.amount_to_recieve } }
+      );
 
       // Create an embed to display redeemed items and balance
       const receivedEmbed = new EmbedBuilder().setTitle(" - Collector - ");
@@ -78,13 +88,6 @@ module.exports = {
             await incomeRedeemTime.save();
 
             // Update or create the balance
-            balance = balance || (await UserBalanceModel.create({
-              guild_id: interaction.guild.id,
-              user_id: interaction.user.id,
-              user_balance_cash: 0,
-              user_balance_bank: 0,
-            }));
-
             balance.user_balance_cash += balanceIncomeRole.amount_to_recieve;
             await balance.save();
 
@@ -173,7 +176,7 @@ module.exports = {
       if (redeemedItems.length > 0) {
         receivedEmbed.addFields({ name: "Items collected", value: redeemedItems.join("\n")});
       }
-      // Send a embed depending if the user has any redeemable roles
+      // Send an embed depending on if the user has any redeemable roles
       if (balanceIncomeRoles.length <= 0 && itemIncomeRoles.length <= 0) {
         receivedEmbed.setColor(`${embedColors.GENERAL_COLORS.RED}`);
         receivedEmbed.setDescription("You don't have any collectable roles.");
@@ -184,7 +187,6 @@ module.exports = {
       console.error(err);
       // Example usage:
       globals.sendErrorEmbed("collect.js", err, interaction);
-
     }
   },
 };

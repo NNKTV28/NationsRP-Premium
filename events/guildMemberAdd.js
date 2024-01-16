@@ -19,7 +19,7 @@ module.exports = {
       });
 
       if (!userRecord) {
-        console.log(`User ${user.id} is not in the database, adding it now`);
+        console.log(color.bold.yellow(`User ${user.id} is not in the database of the server ${guild.name}(${guildID}), adding it now`));
         if (user.bot) {
           userRecord = await UserSettingsModel.create({
             guild_id: guildID,
@@ -28,6 +28,7 @@ module.exports = {
             ephemeral_message: false,
             embed_color: config.defaultEmbedColor
           });
+          console.log(color.bold.yellow(`User ${user.tag} has been added to the database`));
         }else{
           userRecord = await UserSettingsModel.create({
             guild_id: guildID,
@@ -36,6 +37,7 @@ module.exports = {
             ephemeral_message: false,
             embed_color: config.defaultEmbedColor
           });
+          console.log(color.bold.yellow(`User ${user.tag} has been added to the database`));
         } 
       }
       // check if the User is a bot
