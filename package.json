@@ -18,7 +18,7 @@
     "sequelize": "^6.33.0",
     "sqlite": "^5.0.1",
     "sqlite3": "^5.1.6",
-    "undici": "^5.20.0"
+    "undici": "^5.28.3"
   },
   "optionalDependencies": {
     "@top-gg/sdk": "^3.1.3",
