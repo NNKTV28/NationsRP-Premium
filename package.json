@@ -7,7 +7,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@napi-rs/canvas": "^0.1.25",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "chance": "^1.1.9",
     "colors": "^1.4.0",
     "discord-command-cooldown": "^1.0.8",
