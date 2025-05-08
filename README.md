@@ -150,8 +150,10 @@ Color for Embeds: `embedColor`
 
 ## Support
 
-For support, DM nnktv28 on discord or join our [Angel Development channel](https://discord.gg/RQ2NB2V9av).
-
+For support, DM nnktv28 on discord or join our [Aurora Development](https://discord.gg/RQ2NB2V9av).
+## Aditional Info
+- This bot has been discontinued, since the client doesnt need it anymore
+- The bot token is useless, as the bot no longer exists
 
 ## Authors
 
