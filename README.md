@@ -1,7 +1,24 @@
 
 # NationsRP Premium
 
-Private discord economy bot for xarshmk
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Discord.js](https://img.shields.io/badge/discord.js-v14-blue.svg)](https://discord.js.org)
+[![Node.js](https://img.shields.io/badge/node.js-v16+-green.svg)](https://nodejs.org)
+
+A feature-rich Discord economy bot designed for roleplay servers. NationsRP Premium provides a complete virtual economy system with customizable shops, role-based income, inventory management, and administrative tools to create immersive economic experiences for your community.
+
+## ✨ Highlights
+
+- **💰 Full Economy System** - Virtual currency with deposits, withdrawals, and balance tracking
+- **🛒 Custom Shop** - Create and manage server-specific shops with customizable items
+- **📦 Inventory Management** - Users can purchase, store, and use items from the shop
+- **💼 Role-Based Income** - Assign passive income to specific server roles
+- **🎭 Item Income Roles** - Grant income bonuses through special items
+- **🏴 Black Market** - Special marketplace for exclusive items
+- **🎫 Ticket System** - Built-in support ticket functionality
+- **📊 Leaderboards** - Track top earners with the baltop command
+- **🔧 Admin Controls** - Comprehensive tools for server administrators
+- **📝 Full Logging** - Console and webhook logging for errors and database events
 
 
 
@@ -140,12 +157,55 @@ Public Aplication key (required): `publicKEY`
 Discord User id of the Owner (optional): `ownerIDS`  
 
 Color for Embeds: `embedColor`
+
 ## Features
 
-- Fully implemented slash commands
-- Custom Shop and economy
-- Scalable database for easy migration
-- Full bug/error console and webhook log
+### 💰 Economy Commands
+| Command | Description |
+|---------|-------------|
+| `/balance` | Check your current balance |
+| `/baltop` | View the server's top earners |
+| `/deposit` | Deposit cash to your bank |
+| `/withdraw` | Withdraw cash from your bank |
+| `/shop` | Browse available items for purchase |
+| `/buy` | Purchase items from the shop |
+| `/view-inventory` | View your purchased items |
+| `/use` | Use an item from your inventory |
+| `/item-info` | Get detailed information about an item |
+| `/black-market` | Access the exclusive black market |
+
+### 🔧 Administration Commands
+| Command | Description |
+|---------|-------------|
+| `/add-balance` | Add balance to a user |
+| `/remove-balance` | Remove balance from a user |
+| `/add-shop-item` | Create a new shop item |
+| `/edit-shop-item` | Modify an existing shop item |
+| `/remove-shop-item` | Delete a shop item |
+| `/give-user-item` | Give an item directly to a user |
+| `/take-item` | Remove an item from a user |
+| `/add-income-role` | Set up passive income for a role |
+| `/remove-income-role` | Remove income from a role |
+| `/add-item-income-role` | Set up item-based income |
+| `/remove-income-item-role` | Remove item-based income |
+| `/admin-settings` | Configure bot settings |
+| `/synch-db` | Synchronize the database |
+| `/reload-commands` | Reload bot commands |
+
+### ℹ️ Info Commands
+| Command | Description |
+|---------|-------------|
+| `/info` | Display bot information |
+| `/ping` | Check bot latency |
+| `/uptime` | View bot uptime |
+| `/report-issue` | Report bugs or issues |
+
+### 🏗️ Technical Features
+- **Slash Commands** - Modern Discord slash command implementation
+- **SQLite Database** - Lightweight and scalable data storage using Sequelize ORM
+- **Modular Architecture** - Organized command and event structure
+- **Error Handling** - Comprehensive error logging via console and webhooks
+- **PM2 Support** - Production-ready with ecosystem.config.js
 
 
 ## Support
