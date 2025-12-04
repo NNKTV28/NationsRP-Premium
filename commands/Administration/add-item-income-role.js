@@ -35,7 +35,7 @@ module.exports = {
       where: { user_id: interaction.user.id },
     });
 
-    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
+    await interaction.deferReply({ ephemeral: userRecord?.ephemeral_message });
 
     const roleID = interaction.options.getRole('role_id').id;
     const itemName = interaction.options.getString('item_name');
@@ -50,25 +50,29 @@ module.exports = {
       }
 
       // Check if the item name is valid
-      const item = await StoreModel.findOne({ name: itemName });
+      const item = await StoreModel.findOne({ where: { itemName } });
       if (!item) {
         return interaction.editReply('The item name is invalid. The name must be an exact match in the store.');
       }
 
       // Check if the amount to receive is valid
-      const amount = parseInt(amountToReceive, 10);
-      if (amount <= 0) {
+      const amount = Number(amountToReceive);
+      if (Number.isNaN(amount) || amount <= 0) {
         return interaction.editReply('The amount to receive must be a positive number.');
       }
 
       // Check if the timer to receive is valid
-      const timer = timerToReceive.split(':');
-      if (timer.length !== 3) {
-        return interaction.editReply('The timer to receive is invalid.');
+      const timerParts = timerToReceive.split(':').map(Number);
+      if (timerParts.length !== 3 || timerParts.some((part) => Number.isNaN(part))) {
+        return interaction.editReply('The timer to receive is invalid. Use HH:MM:SS format.');
+      }
+      const timerSeconds = timerParts[0] * 3600 + timerParts[1] * 60 + timerParts[2];
+      if (timerSeconds < 60) {
+        return interaction.editReply('Timer to receive must be at least 1 minute.');
       }
 
       // Check if the role already has an item role
-      const itemRole = await itemIncomeRole.findOne({ role_id: roleID });
+      const itemRole = await itemIncomeRole.findOne({ where: { guild_id: interaction.guild.id, role_id: roleID } });
       if (itemRole) {
         return interaction.editReply(`The role already has an item asigned`);
       }
@@ -78,8 +82,8 @@ module.exports = {
         guild_id: interaction.guild.id,
         role_id: roleID,
         item_to_recieve: itemName,
-        amount_to_recieve: amountToReceive,
-        cooldown_timer: timerToReceive,
+        amount_to_recieve: amount,
+        cooldown_timer: timerSeconds,
       });
 
       interaction.editReply(`Item role created for role ID: ${roleID}`);

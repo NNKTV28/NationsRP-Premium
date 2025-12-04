@@ -9,7 +9,8 @@ const Ticket = sequelize.define('ticket', {
         autoIncrement: true
     },
     guild_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
+        allowNull: false,
     },
     user_id: {
         type: Sequelize.STRING,
@@ -30,10 +31,12 @@ const Ticket = sequelize.define('ticket', {
     subject: {
         type: Sequelize.STRING,
         allowNull: false,
+        defaultValue: 'Support Ticket',
     },
     description: {
         type: Sequelize.TEXT,
         allowNull: false,
+        defaultValue: 'Created via ticket panel',
     },
     staff_role_id: {
         type: Sequelize.STRING,

@@ -27,7 +27,7 @@ module.exports = {
       where: { user_id: interaction.user.id },
     });
 
-    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
+    await interaction.deferReply({ ephemeral: userRecord?.ephemeral_message });
     const user = interaction.user;
     try {
         const shopItem = await Store.findOne({
@@ -41,32 +41,19 @@ module.exports = {
           .setDescription('This item doesnt exist in the shop.');
         return interaction.editReply({ embeds: [noItemsEmbed] });
       }
-        if(shopItem.itemQuantity == 0)
-        {
-            itemQuantity = "Infinite"
-        }
-        let role_to_buy_asigned = shopItem.role_to_buy
-        let role_to_use_asigned = shopItem.role_to_use
-        if(shopItem.role_to_buy == interaction.guild.id)
-        {
-            role_to_buy_asigned = "@everyone"
-        }else{
-            role_to_buy_asigned = `<@&${shopItem.role_to_buy}>`
-        }
-        if(shopItem.role_to_use == interaction.guild.id)
-        {
-            role_to_use_asigned = "@everyone"
-        }else{
-            role_to_buy_asigned = `<@&${shopItem.role_to_use}>`
-        }
+        const itemQuantityDisplay = shopItem.itemQuantity === 0 || shopItem.itemQuantity === null ? "Infinite" : shopItem.itemQuantity;
+        const buyRoleId = shopItem.role_to_buy;
+        const useRoleId = shopItem.role_to_use;
+        const role_to_buy_asigned = !buyRoleId || buyRoleId === interaction.guild.id ? "@everyone" : `<@&${buyRoleId}>`;
+        const role_to_use_asigned = !useRoleId || useRoleId === interaction.guild.id ? "@everyone" : `<@&${useRoleId}>`;
 
         const itemsListEmbed = new EmbedBuilder()
           .setTitle(`  - ${shopItem.itemName} information -  `)
           .setColor(`${embedColors.GENERAL_COLORS.GREEN}`)
           .setDescription(`
           **Item Name:** ${shopItem.itemName}\n
-          **Item Price:** ${shopItem.itemPrice}\n
-          **Item Quantity:** ${shopItem.itemQuantity}\n
+          **Item Price:** ${Number(shopItem.itemPrice).toLocaleString()}\n
+          **Item Quantity:** ${itemQuantityDisplay}\n
           **Item Description:** ${shopItem.itemDescription}\n
           **Role to buy:** ${role_to_buy_asigned}\n
           **Role to use:** ${role_to_use_asigned}\n

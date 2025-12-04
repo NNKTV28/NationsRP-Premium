@@ -10,9 +10,25 @@ const UserItemRedeemTimeModel = require("../../models/userItemRedeemTime");
 const UserBalanceModel = require("../../models/balance");
 const UserSettingsModel = require("../../models/usersettings.js");
 const StoreModel = require("../../models/store.js");
-const userInventoryModel = require("../../models/inventory");
+const UserInventoryModel = require("../../models/inventory");
 
 const embedColors = require("../../utils/colors.js");
+
+const parseCooldownSeconds = (value) => {
+  const numeric = Number(value);
+  if (!Number.isNaN(numeric)) {
+    return numeric;
+  }
+
+  if (typeof value === 'string') {
+    const parts = value.split(':').map(Number);
+    if (parts.length === 3 && parts.every((part) => !Number.isNaN(part))) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    }
+  }
+
+  return 0;
+};
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -21,167 +37,151 @@ module.exports = {
 
   async execute(interaction) {
     try {
-      // Fetch user settings and defer the reply
       const userRecord = await UserSettingsModel.findOne({
         where: { user_id: interaction.user.id },
       });
 
       await interaction.deferReply({ ephemeral: userRecord?.ephemeral_message });
 
-      const guildMember = await interaction.guild.members.fetch(interaction.user.id);
-      const roles = [...guildMember.roles.cache.keys()];
+      const guildId = interaction.guild.id;
+      const userId = interaction.user.id;
 
-      // Find or create the balance redeem timer for a user
-      let incomeRedeemTime = await UserIncomeRedeemTimeModel.findOne({
-        where: { guild_id: interaction.guild.id, user_id: interaction.user.id },
-      });
+      const [guildMember, balanceIncomeRoles, itemIncomeRoles] = await Promise.all([
+        interaction.guild.members.fetch(userId),
+        BalanceIncomeRoleModel.findAll({ where: { guild_id: guildId } }),
+        ItemIncomeRoleModel.findAll({ where: { guild_id: guildId } }),
+      ]);
 
-      if (!incomeRedeemTime) {
-        incomeRedeemTime = await UserIncomeRedeemTimeModel.create({
-          guild_id: interaction.guild.id,
-          user_id: interaction.user.id,
-          balance_redeemed_time: Date.now(),
+      const roles = new Set(guildMember.roles.cache.keys());
+
+      let balance = await UserBalanceModel.findOne({ where: { guild_id: guildId, user_id: userId } });
+      if (!balance) {
+        balance = await UserBalanceModel.create({
+          guild_id: guildId,
+          user_id: userId,
+          user_balance_cash: 0,
+          user_balance_bank: 0,
         });
       }
 
-      // Update the balance redeem time in the database
-      await UserIncomeRedeemTimeModel.updateOne(
-        { guild_id: interaction.guild.id, user_id: interaction.user.id },
-        { $set: { balance_redeemed_time: Date.now() } }
-      );
+      const receivedEmbed = new EmbedBuilder()
+        .setTitle("- Collector -")
+        .setColor(embedColors.GENERAL_COLORS.GREEN);
 
-      // Find the balance of a user
-      let balance = await UserBalanceModel.findOne({
-        where: { guild_id: interaction.guild.id, user_id: interaction.user.id },
-      });
+      let collectedCash = 0;
+      const collectedItems = [];
 
-      // Update or create the balance
-      balance = balance || (await UserBalanceModel.create({
-        guild_id: interaction.guild.id,
-        user_id: interaction.user.id,
-        user_balance_cash: 0,
-        user_balance_bank: 0,
-      }));
+      const eligibleBalanceRoles = balanceIncomeRoles.filter((role) => roles.has(role.role_id));
+      for (const roleConfig of eligibleBalanceRoles) {
+        const [redeemRecord] = await UserIncomeRedeemTimeModel.findOrCreate({
+          where: {
+            guild_id: guildId,
+            user_id: userId,
+            role_id: roleConfig.role_id,
+          },
+          defaults: { balance_redeemed_time: 0 },
+        });
 
-      // Update the balance using $inc
-      await UserBalanceModel.updateOne(
-        { guild_id: interaction.guild.id, user_id: interaction.user.id },
-        { $inc: { user_balance_cash: balanceIncomeRole.amount_to_recieve } }
-      );
+        const cooldownMs = parseCooldownSeconds(roleConfig.cooldown_timer) * 1000;
+        const lastRedeem = Number(redeemRecord.balance_redeemed_time || 0);
+        const now = Date.now();
+        const elapsed = now - lastRedeem;
 
-      // Create an embed to display redeemed items and balance
-      const receivedEmbed = new EmbedBuilder().setTitle(" - Collector - ");
+        if (elapsed >= cooldownMs) {
+          redeemRecord.balance_redeemed_time = now;
+          await redeemRecord.save();
 
-      // Redeem balance if the user has the role stored in the Database
-      for (const roleId of roles) {
-        const balanceIncomeRole = balanceIncomeRoles.find(role => role.role_id === roleId);
+          const amount = Number(roleConfig.amount_to_recieve) || 0;
+          collectedCash += amount;
+          balance.user_balance_cash += amount;
+          await balance.save();
 
-        if (balanceIncomeRole) {
-          const currentTime = Date.now();
-          const lastIncomeRedeemTime = incomeRedeemTime.balance_redeemed_time || 0;
-          const cooldown = balanceIncomeRole.cooldown_timer * 1000;
-          const timeElapsed = currentTime - lastIncomeRedeemTime;
-
-          if (timeElapsed >= cooldown) {
-            // Update the balance_redeemed_time in the database to the current time
-            incomeRedeemTime.balance_redeemed_time = currentTime;
-            await incomeRedeemTime.save();
-
-            // Update or create the balance
-            balance.user_balance_cash += balanceIncomeRole.amount_to_recieve;
-            await balance.save();
-
-            receivedEmbed.addFields({
-              name: "Balance collected",
-              value: `$${balanceIncomeRole.amount_to_recieve}`,
-            });
-          } else {
-            const remainingCooldown = cooldown - timeElapsed;
-            const remainingSeconds = Math.ceil(remainingCooldown / 1000);
-            const remainingTime = moment.utc(remainingSeconds * 1000).format("HH:mm:ss");
-
-            receivedEmbed.addFields({
-              name: `Balance role: <@&${roleId}>`,
-              value: `You can redeem again in ${remainingTime} Hours.`,
-            });
-          }
-        }
-      }
-
-      // Initialize an array to store redeemed items
-      const redeemedItems = [];
-
-      // Find or create the item redeem timer for a user
-      let itemRedeemTime = await UserItemRedeemTimeModel.findOne({
-        where: { guild_id: interaction.guild.id, user_id: interaction.user.id },
-      });
-
-      // Loop through the roles and check for item redemption
-      for (const roleId of roles) {
-        const matchingItemRoles = itemIncomeRoles.filter(itemRole => itemRole.role_id === roleId);
-
-        for (const itemRole of matchingItemRoles) {
-          const item_use_role = await StoreModel.findOne({
-            where: { itemName: itemRole.item_to_recieve },
+          receivedEmbed.addFields({
+            name: `Balance collected from <@&${roleConfig.role_id}>`,
+            value: `$${amount.toLocaleString()}`,
           });
-          const userInventory = await userInventoryModel.findAll({
-            where: { user_id: interaction.user.id },
-          })
-          if (!itemRedeemTime) {
-            itemRedeemTime = await UserItemRedeemTimeModel.create({
-              guild_id: interaction.guild.id,
-              user_id: interaction.user.id,
-              item_redeemed_time: Date.now(),
-            });
-          }
-
-          const currentTime = Date.now();
-          const lastItemRedeemTime = itemRedeemTime.item_redeemed_time || 0;
-          const cooldown = parseInt(itemRole.cooldown_timer) * 1000;
-          const timeElapsed = currentTime - lastItemRedeemTime;
-
-          if (timeElapsed >= cooldown) {
-            // Update the item_redeemed_time in the database to the current time
-            itemRedeemTime.item_redeemed_time = currentTime;
-            await itemRedeemTime.save();
-
-            // Redeem the items
-            const existingItem = userInventory.findOne(item => item.item_Name === itemRole.item_to_recieve);
-            
-            if (existingItem) {
-              existingItem.item_Amount += itemRole.amount_to_recieve;
-              await existingItem.save();
-            } else {
-              await userInventoryModel.create({
-                user_id: interaction.user.id,
-                item_Name: itemRole.item_to_recieve,
-                item_Amount: itemRole.amount_to_recieve,
-                role_to_use: item_use_role.role_to_use,
-              });
-            }
-            redeemedItems.push(`${itemRole.item_to_recieve} x ${itemRole.amount_to_recieve}.`);
-          } else {
-            const remainingCooldown = cooldown - timeElapsed;
-            const remainingSeconds = Math.ceil(remainingCooldown / 1000);
-            const remainingTime = moment.utc(remainingSeconds * 1000).format("HH:mm:ss");
-
-            receivedEmbed.addFields({
-              name: `Item ${itemRole.item_to_recieve} not collected`,
-              value: `You can collect again in ${remainingTime} Hours.`,
-            });
-          }
+        } else {
+          const remaining = cooldownMs - elapsed;
+          const remainingTime = moment.utc(remaining).format("HH:mm:ss");
+          receivedEmbed.addFields({
+            name: `Balance role on cooldown <@&${roleConfig.role_id}>`,
+            value: `Collectable again in ${remainingTime}.`,
+          });
         }
       }
-      // Check if any items were redeemed and add them to the receivedEmbed
-      if (redeemedItems.length > 0) {
-        receivedEmbed.addFields({ name: "Items collected", value: redeemedItems.join("\n")});
+
+      const eligibleItemRoles = itemIncomeRoles.filter((role) => roles.has(role.role_id));
+      for (const roleConfig of eligibleItemRoles) {
+        const [redeemRecord] = await UserItemRedeemTimeModel.findOrCreate({
+          where: {
+            guild_id: guildId,
+            user_id: userId,
+            role_id: roleConfig.role_id,
+          },
+          defaults: { item_redeemed_time: 0 },
+        });
+
+        const cooldownMs = parseCooldownSeconds(roleConfig.cooldown_timer) * 1000;
+        const lastRedeem = Number(redeemRecord.item_redeemed_time || 0);
+        const now = Date.now();
+        const elapsed = now - lastRedeem;
+
+        if (elapsed >= cooldownMs) {
+          redeemRecord.item_redeemed_time = now;
+          await redeemRecord.save();
+
+          const amount = Number(roleConfig.amount_to_recieve) || 0;
+          const storeItem = await StoreModel.findOne({ where: { itemName: roleConfig.item_to_recieve } });
+          const roleToUse = storeItem?.role_to_use || guildId;
+
+          const inventoryEntry = await UserInventoryModel.findOne({
+            where: { user_id: userId, item_Name: roleConfig.item_to_recieve },
+          });
+
+          if (inventoryEntry) {
+            inventoryEntry.item_Amount += amount;
+            inventoryEntry.role_to_use = roleToUse;
+            await inventoryEntry.save();
+          } else {
+            await UserInventoryModel.create({
+              user_id: userId,
+              item_Name: roleConfig.item_to_recieve,
+              item_Amount: amount,
+              role_to_use: roleToUse,
+            });
+          }
+
+          collectedItems.push(`${roleConfig.item_to_recieve} x ${amount}`);
+        } else {
+          const remaining = cooldownMs - elapsed;
+          const remainingTime = moment.utc(remaining).format("HH:mm:ss");
+          receivedEmbed.addFields({
+            name: `Item role on cooldown <@&${roleConfig.role_id}>`,
+            value: `Collectable again in ${remainingTime}.`,
+          });
+        }
       }
-      // Send an embed depending on if the user has any redeemable roles
-      if (balanceIncomeRoles.length <= 0 && itemIncomeRoles.length <= 0) {
-        receivedEmbed.setColor(`${embedColors.GENERAL_COLORS.RED}`);
-        receivedEmbed.setDescription("You don't have any collectable roles.");
+
+      if (!eligibleBalanceRoles.length && !eligibleItemRoles.length) {
+        receivedEmbed
+          .setColor(embedColors.GENERAL_COLORS.RED)
+          .setDescription("You don't have any collectable roles yet.");
       }
-      // Edit the interaction reply with the embed
+
+      if (collectedCash > 0) {
+        receivedEmbed.addFields({
+          name: "Total cash collected",
+          value: `$${collectedCash.toLocaleString()}`,
+        });
+      }
+
+      if (collectedItems.length > 0) {
+        receivedEmbed.addFields({
+          name: "Items collected",
+          value: collectedItems.join("\n"),
+        });
+      }
+
       await interaction.editReply({ embeds: [receivedEmbed] });
     } catch (err) {
       console.error(err);

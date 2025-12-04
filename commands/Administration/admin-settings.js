@@ -1,8 +1,7 @@
-const { SlashCommandBuilder, ButtonBuilder, ActionRowBuilder, PermissionFlagsBits, MessageEmbed, MessageButton, MessageActionRow, EmbedBuilder, ComponentType } = require('discord.js');
-const Globals = require("../../utils/globals.js");
+const { SlashCommandBuilder, ButtonBuilder, ActionRowBuilder, PermissionFlagsBits, EmbedBuilder, ChannelType, ButtonStyle } = require('discord.js');
 const GuildModel = require("../../models/guild.js");
 const UserSettingsModel = require("../../models/usersettings.js");
-const TicketModel = require("../../models/ticket.js");
+const embedColors = require('../../utils/colors.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -26,32 +25,26 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false),
   async execute(interaction) {
-    // Global variables
     const guildID = interaction.guild.id;
-    // get all guilds
-    let guildRecord = await GuildModel.findOne({
-      where: { guild_id: guildID },
-    });
-    // get user settings
-    let userRecord = await UserSettingsModel.findOne({
+    const userRecord = await UserSettingsModel.findOne({
       where: { user_id: interaction.user.id },
     });
-    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
-    // Ticket system variables
-    const parentCategory = interaction.options.getChannel("channel");
-    const category = interaction.options.getChannel("category")
+    await interaction.deferReply({ ephemeral: userRecord?.ephemeral_message });
+
+    const ticketChannel = interaction.options.getChannel("channel");
+    const parentCategory = interaction.options.getChannel("parent-category");
 
     if (interaction.options.getSubcommand() === "ticket-system") {
         // check if the provided channel is visible to bot
-        if (!channel.viewable) {
+      if (!ticketChannel || !ticketChannel.viewable || !ticketChannel.isTextBased()) {
             return interaction.editReply({
-                content: "The provided channel is not visible to me",
+          content: "The provided channel must be a text channel that I can access.",
                 ephemeral: true
             })
         }
 
         // check if the provided category is actually a category
-        if (category.type !== ChannelType.GuildCategory) {
+      if (!parentCategory || parentCategory.type !== ChannelType.GuildCategory) {
             return interaction.editReply({
                 content: "The category you provided is invalid",
                 ephemeral: true
@@ -59,84 +52,49 @@ module.exports = {
         }
 
         // check if the provided category is visible to bot
-        if (!category.viewable) {
+      if (!parentCategory.viewable) {
             return interaction.editReply({
                 content: "The provided category is not visible to me",
                 ephemeral: true
             })
         }
 
-        if (!category.permissionsFor(interaction.user.id).has("ManageChannels")) {
+      const botMember = interaction.guild.members.me;
+      if (!botMember.permissions.has(PermissionFlagsBits.ManageChannels)) {
             return interaction.editReply({
                 content: "The bot is missing manage-channels permissions to create ticket channel",
                 ephemeral: true
             })
         }
-        // this will create buttons 
-        const button = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`ticket_create`)
-                    .setLabel('Create Ticket')
-                    .setStyle(ButtonStyle.Success),
-            );
+        await GuildModel.upsert({
+          guild_id: guildID,
+          ticket_parent_category: parentCategory.id,
+        });
 
-        // this will send confirm reply
+        const buttonRow = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId('ticket_create')
+            .setLabel('Create Ticket')
+            .setStyle(ButtonStyle.Success)
+        );
+
+        const ticketEmbed = new EmbedBuilder()
+          .setColor(embedColors.GENERAL_COLORS.BLUE)
+          .setTitle('Support Tickets')
+          .setDescription('Need help? Click the button below to open a private ticket with our staff team.');
+
         await interaction.editReply({
-            content: `The ticket has been setup to ${channel} successfully.`,
-            ephemeral: true
-        })
+          content: `Ticket panel sent to ${ticketChannel} successfully.`,
+          ephemeral: true,
+        });
 
-        // this will send the ticket setup to the provided channel
-        channel.send({
-            components: [button],
-        })
+        await ticketChannel.send({
+          embeds: [ticketEmbed],
+          components: [buttonRow],
+        });
       
     } 
   },
 };
 
-/*
-      // Create the reason prompt
-      const reasonButton = new ButtonBuilder()
-        .setCustomId('reason_button')
-        .setLabel('Provide Reason')
-        .setStyle('Primary');
-
-      const reasonRow = new ActionRowBuilder()
-      .addComponents(reasonButton);
-
-      // Create the embed
-      const embed = new EmbedBuilder()
-        .setColor('#0099ff')
-        .setTitle('Create Ticket')
-        .setDescription(`Ticket channel created: ${ticketChannel}`)
-        .addFields(
-          {name: 'Reason:', value: 'Not provided'}
-        )
-        .setTimestamp();
-
-      // Send the initial embed
-      await interaction.reply({
-        embeds: [embed],
-        components: [reasonRow],
-      });
-
-      // Collect the reason response
-      const collector = interaction.channel.createMessageComponentCollector({
-        componentType: ComponentType.Button,
-        time: 60000, // 60 seconds
-      });
-
-      collector.on('collect', async (buttonInteraction) => {
-        if (buttonInteraction.customId === 'reason_button') {
-          await buttonInteraction.reply('Please provide a reason for opening this ticket.');
-        }
-      });
-    } catch (err) {
-      console.error(err);
-      await interaction.reply('An err occurred while creating the ticket.');
-    }
-  },
-};
-*/
+/* legacy prototype removed */

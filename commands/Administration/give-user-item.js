@@ -29,7 +29,7 @@ module.exports = {
     let userRecord = await UserSettingsModel.findOne({
       where: { user_id: interaction.user.id },
     });
-    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
+    await interaction.deferReply({ ephemeral: userRecord?.ephemeral_message });
 
     const user = interaction.options.getUser('user');
     const itemName = interaction.options.getString('item');
@@ -43,12 +43,14 @@ module.exports = {
 
       if (!existingItem) {
         console.log("Item does not exist in the shop.");
-        return interaction.followUp(`Item "${itemName}" does not exist in the shop.`);
+        return interaction.editReply(`Item "${itemName}" does not exist in the shop.`);
       } else {
         // Create or update the user's inventory for the purchased item
         let userInventory = await Inventory.findOne({
           where: { user_id: user.id, item_Name: itemName },
         });
+
+        const roleToUse = existingItem.role_to_use || interaction.guild.id;
 
         if (!userInventory) {
           console.log("!userInventory works.");
@@ -56,20 +58,22 @@ module.exports = {
           userInventory = await Inventory.create({
             user_id: user.id,
             item_Name: itemName,
-            item_Amount: amount, // Corrected variable name from 'ammount' to 'amount'
+            item_Amount: amount,
+            role_to_use: roleToUse,
           });
           console.log(`Created an inventory entry for ${user.tag}`);
         } else {
           // If the item is already in the inventory, increment the amount
-          userInventory.item_Amount += amount; // Increment the amount directly
-          await userInventory.save(); // Use .save() to update the record
+          userInventory.item_Amount += amount;
+          userInventory.role_to_use = roleToUse;
+          await userInventory.save();
         }
-        interaction.followUp(`Item "${itemName}" has been given to ${user.tag} ${amount} times.`);
+        interaction.editReply(`Item "${itemName}" has been given to ${user.tag} ${amount} times.`);
       }
     } catch (err) {
       console.error(err);
       globals.sendWebhookError(err);
-      interaction.followUp('An err occurred while processing your request.');
+      interaction.editReply('An err occurred while processing your request.');
     }
   }
 };

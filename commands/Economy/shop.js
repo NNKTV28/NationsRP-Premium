@@ -19,11 +19,15 @@ module.exports = {
       where: { user_id: interaction.user.id },
     });
 
-    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
+    await interaction.deferReply({ ephemeral: userRecord?.ephemeral_message });
     const user = interaction.user;
     try {
       const items = await Store.findAll({
-        attributes: ['itemName', 'itemPrice', 'itemDescription', 'itemQuantity'],
+        attributes: ['itemName', 'itemPrice', 'itemDescription', 'itemQuantity', 'role_to_buy'],
+      });
+
+      const userBalance = await Balance.findOne({
+        where: { guild_id: interaction.guild.id, user_id: user.id },
       });
 
       if (!items || items.length === 0) {
@@ -37,10 +41,6 @@ module.exports = {
           .setColor(`${embedColors.GENERAL_COLORS.GREEN}`)
 
         for (const item of items) {
-          const userBalance = await Balance.findOne({
-            where: { user_id: user.id },
-          });
-
           let Unlimited = item.itemQuantity;
           if(Unlimited == 0){
             Unlimited = "Unlimited"
@@ -48,13 +48,18 @@ module.exports = {
             Unlimited = item.itemQuantity
           }
 
-          if (userBalance && userBalance.user_balance_cash >= item.itemPrice) {
+          const canAfford = userBalance && userBalance.user_balance_cash >= item.itemPrice;
+          const roleRequirement = item.role_to_buy === interaction.guild.id ? '@everyone' : `<@&${item.role_to_buy}>`;
+
+          const displayPrice = Number(item.itemPrice).toLocaleString();
+
+          if (canAfford) {
             itemsListEmbed.addFields(
-              { name: `${item.itemName} - ${item.itemPrice.toLocaleString()}$ - Available: ${Unlimited} - ${globals.Yes}`, value: ` ${item.itemDescription}`},
+              { name: `${item.itemName} - ${displayPrice}$ - Available: ${Unlimited} - ${globals.Yes}`, value: `Required Role: ${roleRequirement}\n${item.itemDescription}`},
             );
           } else {            
             itemsListEmbed.addFields(
-              { name: `${item.itemName} - ${item.itemPrice.toLocaleString()}$ - Available: ${Unlimited} - ${globals.No}`, value: ` ${item.itemDescription}`},
+              { name: `${item.itemName} - ${displayPrice}$ - Available: ${Unlimited} - ${globals.No}`, value: `Required Role: ${roleRequirement}\n${item.itemDescription}`},
             );
           }
         }

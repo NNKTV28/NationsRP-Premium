@@ -49,7 +49,7 @@ module.exports = {
         let userRecord = await UserSettingsModel.findOne({
             where: { user_id: interaction.user.id },
         });
-        await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
+        await interaction.deferReply({ ephemeral: userRecord?.ephemeral_message });
         
         let itemName = interaction.options.getString('item');
         let itemPrice = interaction.options.getInteger('price');
@@ -69,11 +69,7 @@ module.exports = {
             roleToUse = roleToUse.id
         }
 
-        const items = await Store.findAll({
-            attributes: ['itemName', 'itemPrice', 'itemQuantity', 'itemDescription']
-        });
-        // Check if the item already exists
-        const existingItem = items.find(item => item.itemName === itemName);
+        const existingItem = await Store.findOne({ where: { itemName } });
         if (existingItem) {
             try {
                 interaction.editReply('That item already exists.');
@@ -96,12 +92,14 @@ module.exports = {
                 const addedItemEmbed = new EmbedBuilder()
                     .setColor(embedColor.GENERAL_COLORS.GREEN)
 
+                const buyDisplay = roleToBuy === guildID ? '@everyone' : `<@&${roleToBuy}>`;
+                const useDisplay = roleToUse === guildID ? '@everyone' : `<@&${roleToUse}>`;
                 if(itemQuantity === 0){
                     addedItemEmbed.setTitle(`Added infinite ${itemName} to the shop.`)    
-                    addedItemEmbed.setDescription(`**Price:** ${itemPrice}$\n **Quantity:** Infinite \n **Role to buy:** ${roleToBuy} \n **Role to use:** ${roleToUse}`)
+                    addedItemEmbed.setDescription(`**Price:** ${itemPrice}$\n **Quantity:** Infinite \n **Role to buy:** ${buyDisplay} \n **Role to use:** ${useDisplay}`)
                 }else{
                     addedItemEmbed.setTitle(`Added ${itemQuantity} ${itemName} to the shop.`)
-                    addedItemEmbed.setDescription(`Price: ${itemPrice} \n **Quantity:** ${itemQuantity} \n Role to buy: ${roleToBuy} \n Role to use: ${roleToUse}`)
+                    addedItemEmbed.setDescription(`Price: ${itemPrice} \n **Quantity:** ${itemQuantity} \n Role to buy: ${buyDisplay} \n Role to use: ${useDisplay}`)
                 }
                 interaction.editReply({embeds: [addedItemEmbed]});
                 

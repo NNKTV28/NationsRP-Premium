@@ -28,41 +28,41 @@ module.exports = {
       where: { user_id: interaction.user.id },
     });
 
-    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
+    await interaction.deferReply({ ephemeral: userRecord?.ephemeral_message });
 
     const roleID = interaction.options.getRole('role_id').id;
     const amountToReceive = interaction.options.getString('amount_to_receive');
     const timerToReceive = interaction.options.getString('timer_to_receive');
 
     try {
-      console.log(roleID);
-      // Check that timer to receive format is HH:MM:SS
-      const timerRegex = /^[0-2]?[0-4]:[0-5][0-9]:[0-5][0-9]$/; // Modified regex
-
-      if (!timerToReceive.match(timerRegex)) {
-        await interaction.editReply('Invalid timer to receive format. Format must be HH:MM:SS');
-        return console.log('Invalid timer to receive format. Format must be HH:MM:SS');
+      const timerRegex = /^(\d{1,2}):(\d{2}):(\d{2})$/;
+      if (!timerRegex.test(timerToReceive)) {
+        return interaction.editReply('Invalid timer format. Use HH:MM:SS');
       }
 
-      const incomeRole = await BalanceIncomeRole.findOne({ where: { guild_id: interaction.guild.id, role_id: roleID } });
-      if (incomeRole) {
-        await interaction.editReply('Income role already exists for this role ID.');
-      }
-      // pass timerToRecieve to secconds
-      const timerToReceiveSeconds = timerToReceive.split(':').reduce((acc, curr) => acc * 60 + curr);
-      console.log(timerToReceiveSeconds);
-
+      const [hours, minutes, seconds] = timerToReceive.split(':').map(Number);
+      const timerToReceiveSeconds = hours * 3600 + minutes * 60 + seconds;
       if (timerToReceiveSeconds < 60) {
-        await interaction.editReply('Timer to receive must be at least 1 minute.');
-        return console.log('Timer to receive must be at least 1 minute.');
+        return interaction.editReply('Timer to receive must be at least 1 minute.');
       }
-      // Create an income role entry in the database
+
+      const parsedAmount = Number(amountToReceive);
+      if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+        return interaction.editReply('Amount to receive must be a positive number.');
+      }
+
+      const existingRole = await BalanceIncomeRole.findOne({ where: { guild_id: interaction.guild.id, role_id: roleID } });
+      if (existingRole) {
+        return interaction.editReply('Income role already exists for this role ID.');
+      }
+
       await BalanceIncomeRole.create({
         guild_id: interaction.guild.id,
         role_id: roleID,
-        amount_to_recieve: amountToReceive,
+        amount_to_recieve: parsedAmount,
         cooldown_timer: timerToReceiveSeconds,
       });
+
       interaction.editReply(`Income role created for role ID: ${roleID}`);
     } catch (err) {
       console.error(err);

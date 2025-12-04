@@ -34,7 +34,7 @@ module.exports = {
     });
   
     // Defer reply with ephemeral message settings
-    await interaction.deferReply({ ephemeral: userRecord.ephemeral_message });
+    await interaction.deferReply({ ephemeral: userRecord?.ephemeral_message });
   
     // Extract relevant information from the interaction
     const userId = interaction.user.id;
@@ -42,10 +42,11 @@ module.exports = {
     const roles = [...guildMember.roles.cache.keys()];
     const itemName = interaction.options.getString("item");
     const amount = interaction.options.getInteger("amount");
+    const guildId = interaction.guild.id;
   
     try {
       // Process buy action and receive response
-      const response = await processBuyAction(userId, itemName, amount, roles);
+      const response = await processBuyAction(guildId, userId, itemName, amount, roles);
   
       // Handle errors or edit reply with success response
       if (response.err) {
@@ -64,33 +65,19 @@ module.exports = {
 }
 
 // Asynchronous function to process the buy action
-async function processBuyAction(userId, itemName, amount, roles) {
+async function processBuyAction(guildId, userId, itemName, amount, roles) {
+  if (!Number.isInteger(amount) || amount <= 0) {
+    return { err: "Amount must be greater than 0." };
+  }
+
   // Retrieve user balance from the database
-  let userBalance = await BalanceModel.findOne({
-    where: { user_id: userId },
+  const [userBalance] = await BalanceModel.findOrCreate({
+    where: { guild_id: guildId, user_id: userId },
+    defaults: {
+      user_balance_cash: 0,
+      user_balance_bank: 0,
+    },
   });
-
-  // Return an error if user balance not found
-  if (!userBalance) {
-    return { err: "User balance not found." };
-  }
-  // Retrieve item from the store that matches any of the specified roles
-  const matchingBuyRoles = await Store.findOne({
-    where: { itemName: itemName, role_to_buy: roles },
-  });
-
-  // Return an error if the user does not own a valid role to buy the item
-  if (!matchingBuyRoles) {
-    const noBuyRole = new EmbedBuilder()
-      .setColor(`${embedColors.GENERAL_COLORS.RED}`)
-      .setTitle("Not Allowed")
-      .setDescription("You don't own a valid role to buy the item.")
-      .addFields({
-        name: `Item not bought: ${itemName}`,
-        value: `You don't own a valid role to buy the item.`,
-      });
-    return { embed: noBuyRole };
-  }
 
   // Retrieve the item details from the store
   const itemInStore = await Store.findOne({
@@ -102,32 +89,52 @@ async function processBuyAction(userId, itemName, amount, roles) {
     return { err: `Item "${itemName}" does not exist in the shop.` };
   }
 
-  // Check for valid amount and availability of the item in the store
-  if (amount === 0) {
-    return { err: "Amount must be greater than 0." };
+  const requiredRoleId = itemInStore.role_to_buy;
+  const hasRequiredRole = !requiredRoleId || requiredRoleId === guildId || roles.includes(requiredRoleId);
+  if (!hasRequiredRole) {
+    const noBuyRole = new EmbedBuilder()
+      .setColor(`${embedColors.GENERAL_COLORS.RED}`)
+      .setTitle("Not Allowed")
+      .setDescription("You don't own a valid role to buy the item.")
+      .addFields({
+        name: `Required role`,
+        value: `<@&${requiredRoleId}>`,
+      });
+    return { embed: noBuyRole };
   }
-  if(itemInStore.itemQuantity > 0){
-    if (amount > itemInStore.itemQuantity) {
-      return {
-        err: `There isn't enough of this item in the store. Currently, there's only ${itemInStore.itemQuantity} ${itemName} left`,
-      };
-    }
+
+  if (itemInStore.itemQuantity && itemInStore.itemQuantity > 0 && amount > itemInStore.itemQuantity) {
+    return {
+      err: `There isn't enough of this item in the store. Currently, there's only ${itemInStore.itemQuantity} ${itemName} left`,
+    };
   }
 
   // Check if the user has enough cash to buy the item
-  if (userBalance.user_balance_cash < itemInStore.itemPrice * amount) {
+  const pricePerUnit = Number(itemInStore.itemPrice);
+  if (Number.isNaN(pricePerUnit) || pricePerUnit <= 0) {
+    return { err: "The store price for this item is invalid." };
+  }
+  const totalPrice = pricePerUnit * amount;
+  if (userBalance.user_balance_cash < totalPrice) {
     return { err: "You don't have enough cash to buy this item." };
   }
 
   // Store the old user balance and update the balance after the purchase
-  let oldUserBalance = userBalance.user_balance_cash;
-  let price = itemInStore.itemPrice * amount;
-  console.log(price);
-  userBalance.user_balance_cash -= price;
+  const oldUserBalance = userBalance.user_balance_cash;
+  userBalance.user_balance_cash -= totalPrice;
   await userBalance.save();
 
   // Handle user inventory and return success response
-  let response = await handleUserInventory(userId, itemName, amount, itemInStore, oldUserBalance);
+  let response = await handleUserInventory({
+    guildId,
+    userId,
+    itemName,
+    amount,
+    itemInStore,
+    userBalance,
+    totalPrice,
+    oldUserBalance,
+  });
 
   return {
     embed: response,
@@ -135,33 +142,29 @@ async function processBuyAction(userId, itemName, amount, roles) {
 }
 
 // Asynchronous function to handle user inventory after a successful purchase
-async function handleUserInventory(userId, itemName, amount, itemInStore, oldUserBalance) {
+async function handleUserInventory({ guildId, userId, itemName, amount, itemInStore, userBalance, totalPrice, oldUserBalance }) {
   // Retrieve user inventory from the database
   let userInventory = await Inventory.findOne({
     where: { user_id: userId, item_Name: itemName },
   });
 
-  // Retrieve user balance from the database
-  let userBalance = await BalanceModel.findOne({
-    where: { user_id: userId },
-  });
-
   // Store the old user item amount
   const oldUserItem = userInventory ? userInventory.item_Amount : 0;
   const oldShopItemQuantity = itemInStore.itemQuantity;
+  const roleToUse = itemInStore.role_to_use || guildId;
   // Check if user inventory does not exist
-  if (!userInventory || userInventory.length == 0) {
+  if (!userInventory) {
     // Create a new inventory record for the user
     userInventory = await Inventory.create({
       user_id: userId,
       item_Name: itemName,
       item_Amount: amount,
-      role_to_use: itemInStore.role_to_use,
+      role_to_use: roleToUse,
     });
 
     // Update item quantity in the store if it is not infinite
     
-    if (itemInStore.itemQuantity > 0) {
+    if (itemInStore.itemQuantity && itemInStore.itemQuantity > 0) {
       if (oldShopItemQuantity == 1) {
         // remove item from the shop
         await itemInStore.destroy();
@@ -177,13 +180,11 @@ async function handleUserInventory(userId, itemName, amount, itemInStore, oldUse
     await userInventory.save();
 
     // Check if the item quantity in the store is not infinite
-    if (itemInStore.itemQuantity === null) {
-      console.log("Item is infinite");
-    } else {
+    if (itemInStore.itemQuantity && itemInStore.itemQuantity > 0) {
       if (oldShopItemQuantity == 1) {
         // remove item from the shop
         await itemInStore.destroy();
-      }else{
+      } else {
         itemInStore.itemQuantity -= amount;
         await itemInStore.save();
       }
@@ -191,11 +192,10 @@ async function handleUserInventory(userId, itemName, amount, itemInStore, oldUse
   }
   
   // Create a success response embed
-  let price = itemInStore.itemPrice * amount;
   const successEmbed = new EmbedBuilder()
     .setColor(embedColors.GENERAL_COLORS.GREEN)
     .setTitle("Successful Buy")
-    .setDescription(`You successfully bought "${itemName}" for ${price}$.`)
+    .setDescription(`You successfully bought "${itemName}" for ${totalPrice}$.`)
     .addFields(
       {
         name: `Item ${itemName} added:`,
@@ -203,7 +203,7 @@ async function handleUserInventory(userId, itemName, amount, itemInStore, oldUse
       },
       {
         name: `New Balance: ${userBalance.user_balance_cash}`,
-        value: `${oldUserBalance} - ${price} = ${userBalance.user_balance_cash}`,
+        value: `${oldUserBalance} - ${totalPrice} = ${userBalance.user_balance_cash}`,
       }
     )
     .setTimestamp();
